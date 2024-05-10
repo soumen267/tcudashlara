@@ -1,6 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
+@push('style_src')
+<style>
+.main-div:nth-child(4n + 1) {
+  background: #0298cf!important;
+}
+
+.main-div:nth-child(4n + 2) {
+  background: #9b479f!important;
+}
+
+.main-div:nth-child(4n + 3) {
+  background: #4e484e!important;
+}
+
+.main-div:nth-child(4n + 4) {
+  background: #f70d1a!important;
+}
+</style>
+@endpush
 <div class="container">
     <div class="row justify-content-center">
         {{-- <div class="col-md-8">
@@ -183,7 +202,7 @@
                     <div class="col-lg-3 col-3">
                         <!-- small box -->
                         <a href="{{ $row['id'] }}" style="text-decoration:none">
-                        <div class="small-box bg-info">
+                        <div class="small-box bg-info main-div">
                             <div class="inner" style="padding:13px">
                                 <h5>Dash {{ ++$key }}</h5>
 
