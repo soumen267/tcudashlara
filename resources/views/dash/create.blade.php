@@ -9,6 +9,7 @@
             </div>
             <!-- /.card-header -->
             <!-- form start -->
+                <form action="{{ route("home.store") }}" method="post">
                 @csrf
                 <div class="card-body">
                     <div class="form-group">
