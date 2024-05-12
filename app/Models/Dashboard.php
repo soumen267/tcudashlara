@@ -19,4 +19,14 @@ class Dashboard extends Model
     {
         return $this->belongsTo(shopify::class,'shopify_id');
     }
+
+    public function crm()
+    {
+        return $this->belongsTo(Crm::class,'crm_id');
+    }
+
+    public function smtp()
+    {
+        return $this->belongsTo(Smtp::class,'smtp_id');
+    }
 }

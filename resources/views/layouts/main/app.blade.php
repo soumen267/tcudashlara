@@ -23,22 +23,25 @@
 
     <script src="https://cdn.datatables.net/1.11.4/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.11.4/js/dataTables.bootstrap5.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css" />
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    <style>
+    .dropdown-item a:hover {background-color: #ddd;}
+    </style>
     @stack('style_src')
 </head>
 <body>
-    <div id="app">
-        <main class="">
-            <div class="wrapper">
-                @include('layouts.partials.header')
-                @include('layouts.partials.sidebar')    
-                <div class="content-wrapper">
-                    @yield('content')
-                </div>
-                @include('layouts.partials.footer')
+<div id="app">
+        <div class="wrapper">
+            @include('layouts.main.partials.header')
+            <div class="content-wrapper" style="margin-left: 0px;">
+                @yield('content')
             </div>
-        </main>
-    </div>
-    @stack('script_src')
+            @include('layouts.main.partials.footer')
+        </div>
+</div>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+@stack('script_src')
 </body>
 </html>

@@ -27,6 +27,7 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/home/create', [App\Http\Controllers\HomeController::class, 'create'])->name('home.create');
 Route::post('/home/store', [App\Http\Controllers\HomeController::class, 'store'])->name('home.store');
+Route::any('/dashboard/{id}', [App\Http\Controllers\HomeController::class, 'mainData'])->name('main');
 Route::get('/create-account/{order_id?}', [App\Http\Controllers\DashboardController::class, 'accountCreate']);
 Route::get('/create-customer', [App\Http\Controllers\DashboardController::class, 'createCustomer']);
 

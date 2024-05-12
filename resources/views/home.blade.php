@@ -201,7 +201,7 @@
                     
                     <div class="col-lg-3 col-3">
                         <!-- small box -->
-                        <a href="{{ $row['id'] }}" style="text-decoration:none">
+                        <a href="{{ url('dashboard',$row['id']) }}" style="text-decoration:none">
                         <div class="small-box bg-info main-div">
                             <div class="inner" style="padding:13px">
                                 <h5>Dash {{ ++$key }}</h5>

@@ -8,4 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class ShopifyCustomer extends Model
 {
     use HasFactory;
+
+    public function crmOrders()
+    {
+        return $this->hasMany(CrmOrder::class);
+    }
 }
