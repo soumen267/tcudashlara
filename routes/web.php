@@ -27,11 +27,17 @@ Auth::routes();
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
 Route::get('/home/create', [App\Http\Controllers\HomeController::class, 'create'])->name('home.create');
 Route::post('/home/store', [App\Http\Controllers\HomeController::class, 'store'])->name('home.store');
-Route::any('/dashboard/{id}', [App\Http\Controllers\HomeController::class, 'mainData'])->name('main');
-Route::get('/create-account/{order_id?}', [App\Http\Controllers\DashboardController::class, 'accountCreate']);
-Route::get('/create-customer', [App\Http\Controllers\DashboardController::class, 'createCustomer']);
+Route::get('/dashboard/{id}', [App\Http\Controllers\HomeController::class, 'mainData'])->name('main');
+Route::post('/dashboard/getdata', [App\Http\Controllers\HomeController::class, 'getData']);
+Route::put('/update', [App\Http\Controllers\HomeController::class, 'customerUpdate'])->name('home.update');
+Route::post('checkOrder', [App\Http\Controllers\HomeController::class, 'orderCheck'])->name('home.check');
+Route::post('searchOrder', [App\Http\Controllers\HomeController::class, 'orderSearch'])->name('home.search');
 
-Route::post('/webhook', 'WebHookController@index');
+Route::any('/create-account/{order_id?}', [App\Http\Controllers\DashboardController::class, 'accountCreate'])->name('dashboard.create-account');
+Route::get('/create-customer', [App\Http\Controllers\DashboardController::class, 'createCustomer']);
+Route::any('/send-email/{email}', [App\Http\Controllers\EmailController::class, 'sendEmail']);
+
+// Route::post('/webhook', 'WebHookController@index');
 
 Route::resource('crm', CrmController::class);
 Route::any('crm/{id}/{status}', [App\Http\Controllers\CrmController::class, 'changeStatus'])->name('crm.status');

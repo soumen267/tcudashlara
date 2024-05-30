@@ -3,77 +3,88 @@
 namespace App\Traits;
 
 use GuzzleHttp\Client;
-use Illuminate\Http\Request;
-use GuzzleHttp\Exception\ClientException;
+use GuzzleHttp\Exception\RequestException;
+
 trait ShopifyTrait {
 
-    public function createCustomer($CustomerData, $key,$pwd,$dmn)
-    {
+
+    public function apiCall(array $data = [], $apiurl, $method){
+
         try {
             $client = new Client();
-            $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/customers/";
-            $request = $client->request('POST', $apiurl, [
+            $request = $client->request($method, $apiurl, [
                 'verify' => false,
-                'body' => $CustomerData,
+                'http_errors' => true,
+                'body' => json_encode($data),
                 'headers' => [
                     'Accept' => 'application/json',
                     'Content-Type' => 'application/json',
                     'X-Shopify-Access-Token' => env("SHOPIFY_ACCESS_TOKEN")
                 ]
             ]); // Url of your choosing
-            $res_body = $request->getBody()->getContents();
-            $results = json_decode($res_body, true);
-            return $results;
-        } catch (ClientException $e) {
-            $jsonBody = $e->getResponse();
-            return $jsonBody;
+            $msg = $request->getBody()->getContents();
+            $statusCode = $request->getStatusCode();
+            $results = json_decode($msg, true);
+            return ['code' => $statusCode, 'msg' => $results];
+        } catch (RequestException $e) {
+            if ($e->hasResponse()) {
+                $response = $e->getResponse();
+                // Log the status code and error message
+                $statusCode = $response->getStatusCode();
+                $msg = $response->getBody()->getContents();
+                return ['code' => $statusCode, 'msg' => $msg];
+            } else {
+                // Handle the case where there's no response
+                $errorMessage = $e->getMessage();
+                return $errorMessage;
+            }
         }
-        
-           
     }
 
-    public function createPriceRule($data)
+    public function createCustomer(array $data = [])
+    {
+        $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/customers/";   
+        $response = $this->apiCall($data,$apiurl,'POST');
+        return $response;
+    }
+
+    public function updateCustomer(array $data = [], $customerId)
+    {
+        $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/customers/$customerId.json";
+        $response = $this->apiCall($data,$apiurl,'PUT');
+        return $response;
+    }
+
+    public function createPriceRule(array $data = [])
     {
         if(empty($data)){
             return;
         }
 
-        $client = new Client();
         $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/price_rules.json/";
-        $request = $client->request('POST', $apiurl, [
-            'verify' => false,
-            'body' => $data,
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'X-Shopify-Access-Token' => env("SHOPIFY_ACCESS_TOKEN")
-            ]
-        ]); // Url of your choosing
-        $res_body = $request->getBody()->getContents();
-        $results = json_decode($res_body, true);
-        return $results;
+        $response = $this->apiCall($data,$apiurl,'POST');
+        return $response;
     }
 
-    public function updatePriceRule($data,$priceRuleId)
+    public function updatePriceRule(array $data = [],$priceRuleId)
+    {
+        if(empty($data)){
+            return;
+        }
+        $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/price_rules/$priceRuleId.json/";
+        $response = $this->apiCall($data,$apiurl,'POST');
+        return $response;
+    }
+
+    public function createDiscountCode(array $data = [],$priceRuleId)
     {
         if(empty($data)){
             return;
         }
 
-        $client = new Client();
-        $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/price_rules/$priceRuleId.json/";
-        $request = $client->request('POST', $apiurl, [
-            'verify' => false,
-            'body' => $data,
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'X-Shopify-Access-Token' => env("SHOPIFY_ACCESS_TOKEN")
-            ]
-        ]); // Url of your choosing
-        $res_body = $request->getBody()->getContents();
-        $results = json_decode($res_body, true);
-        return $results;
+        $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/price_rules/$priceRuleId/discount_codes.json/";
+        $response = $this->apiCall($data,$apiurl,'POST');
+        return $response;
     }
 
     public function generatePassword($length = 8,$type = '')
@@ -92,28 +103,6 @@ trait ShopifyTrait {
         }
         return substr(str_shuffle($data), 0, $length);
 
-    }
-
-    public function createDiscountCode($data,$priceRuleId)
-    {
-        if(empty($data)){
-            return;
-        }
-
-        $client = new Client();
-        $apiurl = "https://aj-store-demo.myshopify.com/admin/api/2024-04/price_rules/$priceRuleId/discount_codes.json/";
-        $request = $client->request('POST', $apiurl, [
-            'verify' => false,
-            'body' => $data,
-            'headers' => [
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-                'X-Shopify-Access-Token' => env("SHOPIFY_ACCESS_TOKEN")
-            ]
-        ]); // Url of your choosing
-        $res_body = $request->getBody()->getContents();
-        $results = json_decode($res_body, true);
-        return $results;
     }
 
 }

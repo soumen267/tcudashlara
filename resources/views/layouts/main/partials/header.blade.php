@@ -45,11 +45,14 @@
                             Dashboard
                         </a>
                         <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown"style="padding: 10px;background: cadetblue;">
-                            @foreach ($getDashboard as $row)
-                            <a class="dropdown-item" href="{{ url('dashboard',$row['id']) }}" style="background: lightsteelblue;border-radius: 17px;font-weight:bold;margin-bottom:5px!important">
-                                {{ $row['dashname'] }}
+                            
+                                @foreach ($getDashboard as $row)
+                                <a class="dropdown-item" href="{{ url('dashboard',$row['id']) }}" style="background: lightsteelblue;border-radius: 17px;font-weight:bold;margin-bottom:5px!important">
+                                    {{ $row['dashname'] }}
+                                </a>
+                                @endforeach
                             </a>
-                            @endforeach
+                            
                         </div>                        
                     </li>
                     <li class="nav-item dropdown">
@@ -64,7 +67,7 @@
                             <a class="dropdown-item" href="{{ route('logout') }}"
                                onclick="event.preventDefault();
                                              document.getElementById('logout-form').submit();">
-                                {{ __('Logout') }}
+                                <i class="fa fa-power-off"></i> {{ __('Logout') }}
                             </a>
 
                             <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">

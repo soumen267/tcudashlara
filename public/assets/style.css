@@ -314,3 +314,13 @@ body small a {
   }
 }
 /* checking end */
+.pagination li a {
+  color: #fff;
+}
+.pagination li a {
+  /* color: #ec6608; */
+  color: #ff5b91;
+}
+a {
+  text-decoration: none !important;
+}
