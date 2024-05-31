@@ -35,7 +35,7 @@ Route::post('searchOrder', [App\Http\Controllers\HomeController::class, 'orderSe
 
 Route::any('/create-account/{order_id?}', [App\Http\Controllers\DashboardController::class, 'accountCreate'])->name('dashboard.create-account');
 Route::get('/create-customer', [App\Http\Controllers\DashboardController::class, 'createCustomer']);
-Route::any('/send-email/{email}', [App\Http\Controllers\EmailController::class, 'sendEmail']);
+Route::any('/send-email', [App\Http\Controllers\EmailController::class, 'sendEmail'])->name('sendEmail');
 
 // Route::post('/webhook', 'WebHookController@index');
 

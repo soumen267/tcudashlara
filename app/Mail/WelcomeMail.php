@@ -12,13 +12,14 @@ use Illuminate\Queue\SerializesModels;
 class WelcomeMail extends Mailable
 {
     use Queueable, SerializesModels;
-
+    public $getData,$dashboardId;
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct($getData,$dashboardId)
     {
-        //
+        $this->getData = $getData;
+        $this->dashboardId = $dashboardId;
     }
 
     /**
@@ -59,6 +60,10 @@ class WelcomeMail extends Mailable
          * "resources/views" folder. If you don't have this file, then
          * create it.
          */
+        // $order = $this->orddata['order_id'];
+        // return $this->subject('Order Confirmation - '. $this->orddata['order_id'])
+        //             ->markdown('mail.orderconfirm');
+        //             //->attachData($this->pdf, 'invoice-'.$order.'.html');
         return $this->from("support@example.com")->view('email_template.email');
     }
 }

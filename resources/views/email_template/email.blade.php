@@ -46,7 +46,7 @@
 
                         <td align="left" valign="middle" height="200">
 
-                            <div style="font-size: 40px; font-weight: bold;line-height: 1.5em;color: #000; padding:10px 10px"><span style="background-color:#fff;padding:5px">$$75 GIFT CARD</span></div>
+                            <div style="font-size: 40px; font-weight: bold;line-height: 1.5em;color: #000; padding:10px 10px"><span style="background-color:#fff;padding:5px">${{ $couponAmount ?? '' }} GIFT CARD</span></div>
 
                             <div style="font-size: 25px; font-weight: bold;line-height: 1.7em;color: #000; padding: 0px 10px"><span style="background-color:#fff;padding:5px">AND ACCESS TO</span></div>
 
@@ -54,7 +54,7 @@
 
                             <div style="font-size: 28px; font-weight: bold;line-height: 1.5em;color: #000; position: relative; width: 80px;height: 80px;float: right;  background: #fff; border-radius: 100%; text-align: center; line-height: 80px;
     margin-right: 16px;letter-spacing: -1px;">
-                                <div>$$75</div>
+                                <div>${{ $couponAmount ?? '' }}</div>
                             </div>
 
                         </td>
@@ -79,7 +79,7 @@
 
                             <div style="font-size: 14px;line-height: 1.5em ! important; padding: 0px 25px 25px 25px ">
 
-                                Use your exclusive <strong>$$75 Gift Card</strong> on <strong>cuttingedgegizmo.com</strong>, the #1 online store for
+                                Use your exclusive <strong>${{ $couponAmount ?? '' }} Gift Card</strong> on <strong>cuttingedgegizmo.com</strong>, the #1 online store for
 
                                 consumer goods, health, fitness goods, and so much more! 
 
@@ -129,7 +129,7 @@
 
                                         <td valign="top" width="300">
 
-                                            <div style="font-size: 14px;">cs@slickdroppick.com
+                                            <div style="font-size: 14px;">{{ $customerEmail ?? '' }}
 
                                             </div>
 
@@ -147,7 +147,7 @@
 
                                         <td valign="top" width="300">
 
-                                            <div style="font-size: 14px;">12345
+                                            <div style="font-size: 14px;">{{ $customerPassword ?? '' }}
 
                                             </div>
 
@@ -165,7 +165,7 @@
 
                                         <td valign="top" width="300">
 
-                                            <div style="font-size: 14px;">123456
+                                            <div style="font-size: 14px;">{{ $discountCode ?? '' }}
 
                                             </div>
 
