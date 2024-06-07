@@ -5,19 +5,19 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Crm;
 use App\Models\Smtp;
+use App\Helpers\helper;
 use App\Models\Product;
 use App\Models\Shopify;
 use App\Models\CrmOrder;
 use App\Models\Dashboard;
-use Illuminate\View\View;
 use App\Traits\StickyTrait;
 use Illuminate\Support\Str;
 use App\Traits\ShopifyTrait;
 use Illuminate\Http\Request;
 use App\Models\ShopifyCustomer;
 use Yajra\DataTables\DataTables;
+use App\Models\ShopifyNotregData;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Redirect;
 
 class HomeController extends Controller
 {
@@ -41,6 +41,20 @@ class HomeController extends Controller
     {
         $getData = Dashboard::where('status','=',1)->get();
         return view('home',compact('getData'));
+    }
+
+    public function getDashData(Request $request){
+        $getDashboards = Dashboard::with('crm', 'shopify', 'smtp')->where('status', '=', 1)->where('id', '=', $request->id)->first();
+        $getAllowedProducts1 = Dashboard::with('products')->where('status', '=', 1)->where('id', '=', $request->id)->get();
+            foreach ($getAllowedProducts1 as $products) {
+                $data = $products->products->pluck('products');
+                $getAllowedProduct = $data->implode(',');
+        }
+        return response()->json([
+            "getDashboards" => $getDashboards,
+            "getAllowedProduct" => $getAllowedProduct
+         ]
+        );
     }
 
     public function create(){
@@ -77,39 +91,14 @@ class HomeController extends Controller
 
     public function mainData(Request $request, $id)
     {
-        
         if (empty($id)) {
             die();
         } else {
-            $columns = [];
-            $type = '';
             $data = [];
             $getDatas = [];
-            $getAllowedProduct = '';
-            $getDashboard = Dashboard::where('status', '=', 1)->get(['id', 'dashname']);
-            $getDashboards = Dashboard::with('crm', 'shopify', 'smtp')->where('status', '=', 1)->where('id', '=', $id)->first();
-            $getAllowedProducts = Dashboard::with('products')->where('status', '=', 1)->where('id', '=', $id)->get();
-            foreach ($getAllowedProducts as $products) {
-                $data = $products->products->pluck('products');
-                $getAllowedProduct = $data->implode(',');
-            }
+            $getDashboard = Helper::getDashboardName();
             if ($request->ajax()) {
                 if ($request->filled('from_date') && $request->filled('to_date')) {
-                    if ($request->type == 'failed') {
-                        $orderId = DB::table('shopify_notreg_data')->whereBetween('created_at', [$request->from_date, $request->to_date])->pluck('pid')->toArray();
-                        $getProducts = Product::where('dashboard_id', '=', $id)->pluck('products')->toArray();
-                        $CheckAllowedProduct = array_intersect(
-                            $orderId,
-                            $getProducts
-                        );
-                        
-                        foreach ($CheckAllowedProduct as $row) {
-                            $getData = DB::table('shopify_notreg_data')->where('pid', '=', $row)
-                                        ->select('id','order_id','email','error_msg','created_at')
-                                        ->first();
-                            array_push($getDatas, $getData);
-                        }
-                    } elseif ($request->type == 'success') {
                         $now = \Carbon\Carbon::now();
                         $getDatas = DB::table('crm_orders')
                         ->join('shopify_customers', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
@@ -126,32 +115,11 @@ class HomeController extends Controller
                         )
                             ->whereBetween('shopify_customers.created_at', [$request->from_date, $request->to_date])
                             ->where('dashboard', '=', $id);
-                    }
                 } else {
                     $now = Carbon::now();
-                    $getDatas = DB::table('crm_orders')
-                    ->join('shopify_customers', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
-                    ->select(
-                        'crm_orders.id',
-                        'shopify_customers.name',
-                        'shopify_customers.email_address',
-                        'shopify_customers.phone',
-                        'shopify_customers.password',
-                        'shopify_customers.coupon_code',
-                        'shopify_customers.balance',
-                        'shopify_customers.created_at',
-                        'shopify_customers.mail_status',
-                        'shopify_customers.created_at'
-                    )
-                    ->where('dashboard', '=', $id);
+                    $getDatas = Helper::getCrmShopifyData($id);
                 }
-                if($request->type == 'failed'){
-                    $columns = ['Id','Order Id','Email','Error','Created Date'];
-                }else{
-                    $columns = [
-                        'ID','Name','Contact Details','Password','Coupon Code','Balance','Mail Status','Created Date','Action'
-                    ];
-                }
+                
                 return DataTables::of($getDatas)
                     ->addColumn('balance', function ($row) {
                         if(isset($row->balance)){
@@ -161,7 +129,12 @@ class HomeController extends Controller
                     })
                     ->addColumn('action', function ($row) {
                         $html = '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-success btn-sm edit-details" style="margin:3px;">Edit</a>';
-                        $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-danger btn-sm sendmail">Send Mail</a>';
+                        if($row->mail_status == 'Sent'){
+                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-danger btn-sm sendmail">Re-Send Mail</a>';
+                        }else{
+                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-danger btn-sm sendmail">Send Mail</a>';
+                        }
+                        
                         return $html;
                     })
                     ->addColumn('created_at', function ($row) {
@@ -169,15 +142,39 @@ class HomeController extends Controller
                         return $date;
                     })                    
                     ->with([
-                        'columns' => $columns,
-                        'type' => $request->type
+                        'type' => $request->type,
+                        'getData' => $getDatas
                     ])
                     ->make(true);
             }
-            return view('main', compact('getDashboard', 'getDashboards', 'getAllowedProducts', 'getAllowedProduct'));
-            //return view('main');
-            // return view('main', compact('getDatas', 'getDashboard','getDashboards','getAllowedProducts','getAllowedProduct'));
+            return view('main',compact('getDashboard'));
         }
+    }
+    public function failedData(Request $request, $id)
+    {
+        //$getDatas1 = [];
+        $type = '';
+        $getDashboard = Helper::getDashboardName();
+        if ($request->ajax()) {
+            if ($request->filled('from_date') && $request->filled('to_date')) {
+                $orderId = DB::table('shopify_notreg_data')->whereBetween('created_at', [$request->from_date, $request->to_date])->pluck('pid')->toArray();
+                $getDatas1 = Helper::failedData($id, $orderId);
+            }else{
+                $orderId = DB::table('shopify_notreg_data')->pluck('pid')->toArray();
+                $getDatas1 = Helper::failedData($id, $orderId);
+            }
+            return DataTables::of($getDatas1)
+                    ->addColumn('created_at', function ($row) {
+                        $date = date("F d, Y", strtotime($row->created_at));
+                        return $date;
+                    })                    
+                    ->with([
+                        'type' => $request->type,
+                        'getData' => $getDatas1
+                    ])
+                    ->make(true);
+        }
+        return view('main-failed',compact('getDashboard'));
     }
     public function getData(Request $request){
         $getData = DB::table('crm_orders')
@@ -372,5 +369,31 @@ class HomeController extends Controller
             $html .= '<tr><th>Shopify Customer Password</th><td>'.$responseArray['shopify_password'].'</td></tr>';
         }
         echo $html;        
+    }
+
+    public function updatePIDNotRegData(){
+        $getOrderID = ShopifyNotregData::where('pid','=',0)->pluck('order_id');
+        $orderID = [];
+        foreach($getOrderID as $key => $orderid){
+            $orderID[] = $orderid;
+        }
+        $orderId = [
+            'order_id' => $orderID
+        ];
+        $apiurl = env("STICKY_URL");
+        $key = env("STICKY_API_USERNAME");
+        $pwd = env("STICKY_API_PASSWORD");
+        $ViewOrder = $this->orderView($apiurl, $orderId, $key, $pwd);
+        $oid = '';
+        $data = '';
+        foreach($ViewOrder['data'] as $row){
+            $oid = $row['order_id'];
+            $data = $row['products'][0]['product_id'];
+        }
+        ShopifyNotregData::where('order_id','=',$oid)
+                          ->where('pid','0')
+                          ->update([
+                                'pid' => $data,
+        ]);
     }
 }

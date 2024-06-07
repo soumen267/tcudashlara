@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 class EmailController extends Controller
 {
     public function sendEmail(Request $request){
+    $emailTemplate = NULL;
     $isForced = isset($request->isForced) ? $request->isForced : '0';
     $getShopifyData = CrmOrder::where('id', '=', $request->id)->first();
     $getAllData = Dashboard::with('shopify','crm','smtp')->where('id', '=', $getShopifyData->dashboard)->first();
@@ -59,12 +60,28 @@ class EmailController extends Controller
                     $fromEmail = $getAllData->smtp->mailfrom;
                     $mailgunApi = $getAllData->smtp->api;
                     $domain = $getAllData->smtp->domain;
-                if($smtpType == "mailgun"){
+                if($smtpType == "mailgun"){                  
+                    if($getAllData->id == '1'){
+                        //cuttingedgegizmo
+                        $emailTemplate = "email_template.cuttingedgegizmos.email";
+                    }elseif($getAllData->id == '2'){
+                        //imoderntrendsdash
+                        $emailTemplate = "email_template.imoderntrendsdash.email";
+                    }elseif($getAllData->id == '3'){
+                        //jovprimewidgetpickdash
+                        $emailTemplate = "email_template.jovprimewidgetpickdash.email";
+                    }elseif($getAllData->id == '4'){
+                        //tlhignitegeartech
+                        $emailTemplate = "email_template.tlhignitegeartech.email";
+                    }elseif($getAllData->id == '5'){
+                        //egizmotrendsdash
+                        $emailTemplate = "email_template.egizmotrendsdash.email-template-3";
+                    }
                     $params = [
                         'from'	    => $fromEmail,
                         'to'	    => $getData->email_address,
                         'subject'   => 'Customer Welcome',
-                        'html'	    =>  view('email_template.email', compact('customerEmail','customerPassword','discountCode','couponAmount'))->render()
+                        'html'	    =>  View($emailTemplate, compact('customerEmail','customerPassword','discountCode','couponAmount'))->render()
                     ];
                     try {
                         $mgClient = Mailgun::create($mailgunApi);
@@ -87,6 +104,7 @@ class EmailController extends Controller
                             }
                         }
                     } catch (Exception $e) {
+                        dd($e->getMessage());
                         if($isForced == '0'){
                             $updateMailData = $ShopifyCustomerRawData;
                         }

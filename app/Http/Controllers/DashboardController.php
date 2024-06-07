@@ -135,24 +135,26 @@ class DashboardController extends Controller
                                 '<tr><td colspan="2"><span class="text-danger">' .
                                 $error_reason .
                                 "</span></td></tr>";
-                            die();
+                            //die();
+                        }else{
+                            $saveShopify = new ShopifyCustomer();
+                            $saveShopify->name = $response1['msg']['customer']["first_name"] . " " . $response1['msg']['customer']["last_name"];
+                            $saveShopify->shopify_customer_id = $response1['msg']['customer']["id"];
+                            $saveShopify->email_address = $response1['msg']['customer']["email"];
+                            $saveShopify->password = $password;
+                            $saveShopify->phone = $response1['msg']['customer']["phone"];
+                            $saveShopify->crm_response = json_encode($response, true);
+                            $saveShopify->status = "Active";
+                            $saveShopify->save();
+    
+    
+                            $responseArr["CustomerStatus"] = "Customer Created";
+                            $responseArr["CustomerId"] = $saveShopify["shopify_customer_id"];
+                            $responseArr["CustomerUsername"] = $saveShopify["email_address"];
+                            $responseArr["CustomerPassword"] = $saveShopify["password"];
                         }
                         // dd($response1);
-                        $saveShopify = new ShopifyCustomer();
-                        $saveShopify->name = $response1['msg']['customer']["first_name"] . " " . $response1['msg']['customer']["last_name"];
-                        $saveShopify->shopify_customer_id = $response1['msg']['customer']["id"];
-                        $saveShopify->email_address = $response1['msg']['customer']["email"];
-                        $saveShopify->password = $password;
-                        $saveShopify->phone = $response1['msg']['customer']["phone"];
-                        $saveShopify->crm_response = json_encode($response, true);
-                        $saveShopify->status = "Active";
-                        $saveShopify->save();
-
-
-                        $responseArr["CustomerStatus"] = "Customer Created";
-                        $responseArr["CustomerId"] = $saveShopify["shopify_customer_id"];
-                        $responseArr["CustomerUsername"] = $saveShopify["email_address"];
-                        $responseArr["CustomerPassword"] = $saveShopify["password"];
+                        
                     }
                 }
             } catch (\GuzzleHttp\Exception\BadResponseException $e) {
@@ -202,6 +204,7 @@ class DashboardController extends Controller
                 $responseArr["PriceRuleStatus"] =
                     "Price Rule Created. Id: " . $priceRuleId;
             } else {
+                //dd("Hi");
                 settype($priceRuleId, "integer");
                 $priceRuleData = [
                    "price_rule"=> [

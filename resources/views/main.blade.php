@@ -1,57 +1,56 @@
-@extends('layouts.main.app')
+@extends('layouts.app')
 @section('content')
 <div class="container">
   <h3 class="text-center mt-3 mb-5">List Of Customer</h3>
       <div class="row">
         <div class="col-lg-8 mb-3">
           <form class="d-inline-flex searchFrm" action="" method="get">
-            {{-- <div class="form-group mr-3 mb-2">
-              <label for="name" class="sr-only">name</label>
-              <input type="text" class="form-control" name="str" value="" placeholder="Keyword">
-            </div> --}}
             <div class="form-group" style="margin: 6px;">
               <label for="name" class="">Status:</label>
-              <input type="radio" name="type" value="success"> Success
-              <input type="radio" name="type" value="failed"> Failed
+              <a href="{{ url("dashboard", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-primary mr-3 mb-2 success">Success</a>
+              <a href="{{ url("dashboard/failed", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-danger mr-3 mb-2 failed">Failed</a>
             </div>
-            <div class="form-group mr-3 mb-2">
+            <div class="form-group mt-1">
               <label for="date" class="sr-only">date</label>
               <input type="text" class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
             </div>
+            <div class="form-group mt-1">
             <button value="Search" class="btn btn-primary mr-3 mb-2 filter" type="buttton" style="display: inline;margin-left: 7px;">Search</button>
-      
             <button class="btn btn-danger mr-3 mb-2" id="reset" type="button" style="margin-left: 2px;">Reset</button>
-      
+            </div>
             <!-- <a href="error_data.php"  id="reset" class="btn btn-info mr-3 mb-2" >Failed Data</a> -->
-      
-      
           </form>
         </div>
         <div class="col-lg-4">
-            @php
-            $mylink = $_SERVER['PHP_SELF'];
-            $link_array = explode('/',$mylink);
-            $lastpart = end($link_array);
-            @endphp
-            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ $lastpart }}" data-val="0">Add Customer</button>
-            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ $lastpart }}" data-val="1">Credit Customer</button>
-            <a href="javascript:void(0)" class="btn btn-info mx-2" role="button">Config Details</a>
+            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="0">Add Customer</button>
+            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="1">Credit Customer</button>
+            <a href="javascript:void(0)" class="btn btn-info mx-2" role="button" data-id="{{ \Helper::getIdfromUrl() }}">Config Details</a>
         </div>
       </div>
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped dataTable" id="dataTable" width="100%">
-      <thead>
-        
-      </thead>
-      <tbody>
-
-      </tbody>
-      <tfoot>
-      </tfoot>
-    </table>
-  </div>
-<div class="position-fixed top-0 right-0 p-3" style="z-index: 5; right: 0; top: 0;">
-  <div id="liveToast" class="toast hide bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped dataTable" id="dataTable1" width="100%">
+          <thead>
+            <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Contact Details</th>
+            <th>Password</th>
+            <th>Coupon Code</th>
+            <th>Balance</th>
+            <th>Mail Status</th>
+            <th>Created At</th>
+            <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+    
+          </tbody>
+          <tfoot>
+          </tfoot>
+        </table>
+      </div>
+      <div class="position-fixed top-0 right-0 p-3" style="z-index: 5; right: 0; top: 0;">
+      <div id="liveToast" class="toast hide bg-success text-white" role="alert" aria-live="assertive" aria-atomic="true" data-delay="5000">
       <div class="toast-header">
           <strong class="mr-auto">Message</strong>
           <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
@@ -74,7 +73,52 @@ $(document).ready(function () {
   if($.urlParam('dates')==false){
     $("#dates").val('');
   }
+  $('.success').trigger('click');
+  $('.success').addClass('actives');
 });
+$(".mx-2").click(function (e) {
+  e.preventDefault();
+  var id = $(this).data("id");
+  $.ajax({
+    type: "POST",
+    url: "{{ route('getDashData') }}",
+    data: {"id":id, "_token":"{{csrf_token()}}"},
+    dataType: "json",
+    async: false,
+    success: function (response) {
+        console.log(response);
+        $("#modal-xl").show();
+        $(".shopifydomainname").text(response.getDashboards.shopify.shopifydomainname);
+        $(".shopifyshopname").text(response.getDashboards.shopify.shopifyshopname);
+        $(".mailfrom").text(response.getDashboards.smtp.mailfrom);
+        $(".username").text(response.getDashboards.smtp.username);
+        $(".apiendpoint").text(response.getDashboards.crm.apiendpoint);
+        $(".domain").text(response.getDashboards.smtp.domain);
+        $(".storeurl").val(response.getDashboards.shopify.storeurl);
+        $(".product").text(response.getAllowedProduct);
+    },
+  });  
+});
+$(".filter").click(function (e) {
+    e.preventDefault();
+    const type = $('input[name=type]:checked').val();
+    var from_date = $('input[name="dates"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
+    var to_date = $('input[name="dates"]').data('daterangepicker').endDate.format('YYYY-MM-DD');
+    if(from_date != '' && to_date != ''){
+      table.destroy();
+      load_data(from_date, to_date, type);
+    }else{
+      alert('Both Date is required');
+    }
+});
+$("#reset").click(function(e){
+    e.preventDefault()
+    $("#dates").val('');
+    table.destroy();
+    //table.clear().draw()
+    $('input[value="success"]').trigger('click');
+    load_data()
+})
 $("body").on("click",".sendmail", function(e){
   e.preventDefault();
   var id = $(this).data("id");
@@ -109,12 +153,26 @@ $('input[name="dates"]').daterangepicker({
 });
 
 load_data()
-var table;
 function load_data(from_date = '', to_date = '', type = '')
 {
-  var columns;
-  if(type == 'success' || type == ''){
-  columns =  [
+  table = $('#dataTable1').DataTable({
+        processing: true,
+        serverSide: true,
+        responsive: true,
+        destroy: true,
+        "bSortable": true,
+        ajax: {
+          url: Id,
+          data:function (d) {
+                d.from_date = from_date;
+                d.to_date = to_date;
+                d.type = $('input[name=type]:checked').val();
+          }
+        },
+        drawCallback: function (setting) {
+          //$('#dataTable2 thead tr').remove();
+        },
+        columns:[
           {data: 'id', name: 'id', searchable: true, sortable : true},
           {data: 'name', name: 'shopify_customers.name', searchable: true, sortable : true},
           {data: 'email_address', name: 'shopify_customers.email_address', searchable: true, sortable : true,
@@ -127,118 +185,23 @@ function load_data(from_date = '', to_date = '', type = '')
           {data: 'mail_status', name: 'action'},
           {data: 'created_at', name: 'created_at'},
           {data: 'action', name: 'action', searchable: false, sortable : false}
-        ];
-  }else if(type == 'failed'){
-    columns =  [
-      {data: 'id', name: 'id', searchable: true, sortable : true},
-      {data: 'order_id', name: 'order_id', searchable: true, sortable : true},
-      {data: 'email', name: 'email', searchable: true, sortable : true},
-      {data: 'error_msg', name: 'error_msg', searchable: true, sortable : true},
-      {data: 'created_at', name: 'created_at'}
-    ];
-  }
-  table = $('#dataTable').DataTable({
-        processing: true,
-        serverSide: true,
-        responsive: true,
-        "bDestroy": true,
-        "bSortable": true,
-        ajax: {
-          url: Id,
-          data:function (d) {
-                d.from_date = from_date;
-                d.to_date = to_date;
-                d.type = $('input[name=type]:checked').val();
-          }
-        },
-        drawCallback: function (data) {
-          $('#dataTable thead tr').remove();
-          // $("#header").remove();
-          // if(data.aoData.length > 0) {
-            // this.api().columns().every(function() {
-            //     var column = this;
-            //     var header = $(this.columns());
-            //     header.addClass('sortable');
-
-            //     header.off('click').on('click', function() {
-            //     var order = column.order();
-            //     if (order[0] === 'asc') {
-            //       column.order('desc').draw();
-            //     } else {
-            //       column.order('asc').draw();
-            //     }
-            //   });
-            // })
-            let parseData = data.json;
-            var columns = parseData.columns.map(function(column) {
-              return { title: column};
-            });
-            $('#dataTable thead').append('<tr role="row" id="header">' + columns.map(function(col) {
-                          return "<th>" + col.title + "</th>";
-            }).join('') + '</tr>');
-            // $('#dataTable thead tr th').append(columns.map(function(col) {
-            //               return col.title;
-            // }).join('') + '</tr>');
-            // $('#dataTable thead tr:eq(0) th').append(columns.map(function(col) {
-            //               return col.title;
-            // }).join(''));
-            // var myArray = [];
-            // $('#dataTable thead tr:eq(0) th').each(function(index,item) {
-            //     columns.map(function(col) {
-            //       myArray.push(col.title);
-            //     });
-            //   console.log(myArray);
-            // })
-            // $('#dataTable tfoot').append('<tr role="row">' + columns.map(function(col) {
-            //               return "<th>" + col.title + "</th>";
-            // }).join('') + '</tr>');
-          // }
-        },
-        columns:columns,
-        error: function(xhr, error) {
-          console.log(xhr);
-          console.log(error);
-          alert("An error occurred while fetching data.");
-        },
+        ],
         language: {
           processing: "Loading... <i style='font-size:20px' class='fa fa-refresh fa-spin'></i>"
         },
-        order: [[3, 'asc']],
         lengthMenu: [[10, 20,25,50,100, -1], [10, 20,25,50,100, "All"]],
         dom: 'RlBfrtlip',
         orientation : 'landscape',
         pageSize : 'A0',
         buttons: [
-          'copy', 'csv', 'excel', 'pdf'
+          'copy', 'csv', 'excel', 'print', { extend: 'pdf',exportOptions: {
+            columns: 'th:not(:last-child)'
+            }
+          }
         ],
-        "pagingType": "full_numbers"
+        "pagingType": "full_numbers",        
     });
   }
-  $(".filter").click(function (e) {
-    e.preventDefault();
-    const type = $('input[name=type]:checked').val();
-    var from_date = $('input[name="dates"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
-    var to_date = $('input[name="dates"]').data('daterangepicker').endDate.format('YYYY-MM-DD');
-    if(from_date != '' &&  to_date != ''){
-      table.destroy();
-      $('#dataTable tbody').empty()
-      $('#dataTable thead').empty()
-      // $('#dataTable').DataTable().destroy();
-      load_data(from_date, to_date, type);
-    }else{
-      alert('Both Date is required');
-    }
-  });
-  $("#reset").click(function(e){
-    e.preventDefault()
-    $("#dates").val('');
-    table.destroy();
-    $('#dataTable tbody').empty()
-    $('#dataTable thead').empty()
-    $('input[value="success"]').trigger('click');
-    // $('#order_table').DataTable().destroy();
-    load_data()
-  })
 
 $("body").on("click",".edit-details", function(e){
   e.preventDefault();
@@ -351,10 +314,16 @@ $(document).on("click","#search",function(){
                         url: '{{ route("home.check") }}',
                         method: 'POST',
                         data: $('[name=search-form]').serialize(),
+                        beforeSend: function(data){
+                          $("#loading").show();
+                        },
                         success: function (data) { 
                             $("#search_results").html("");
                             $("#search_results").html(data);
                             // $("#creatediv").hide();
+                        },
+                        complete: function(data){
+                          $("#loading").hide();
                         }
                     });
           }else{
@@ -363,7 +332,7 @@ $(document).on("click","#search",function(){
             $(".error-msg").css({'color':'red','font-weight': 'bold'});
           }
       });
-      $(document).on("click",".create_customer",function(){
+$(document).on("click",".create_customer",function(){
                 var orderid = $(this).data('id');
                 // var crmtype = $(this).data('crm');
                 $(this).hide();
@@ -381,7 +350,7 @@ $(document).on("click","#search",function(){
                         }
                     });
                 }
-      });
+});
 </script>
 @endpush
 @endsection

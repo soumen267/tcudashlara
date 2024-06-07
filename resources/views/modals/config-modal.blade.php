@@ -22,7 +22,7 @@
                   <tr>
                       <td>Shopify Store</td>
                       <td>
-                          <input type="text" class="form-control" name="__SHOPIFYSHOPNAME__" placeholder="Shopify Store" value="{{ $getDashboards->shopify['storeurl'] ?? ''}}">
+                          <input type="text" class="form-control storeurl" name="storeurl" placeholder="Shopify Store" value="{{ $getDashboards->shopify['storeurl'] ?? ''}}">
                       </td>
                   </tr>
                   <tr>
@@ -31,32 +31,32 @@
                   </tr>
                   <tr>
                       <td>Shopify Domain Name</td>
-                      <td>{{ $getDashboards->shopify['shopifydomainname'] ?? '' }}</td>
+                      <td class="shopifydomainname">{{ $getDashboards->shopify['shopifydomainname'] ?? '' }}</td>
                   </tr>
                   <tr>
                       <td>Shopify Store Name</td>
-                      <td>{{ $getDashboards->shopify['shopifyshopname'] ?? ''}}</td>
+                      <td class="shopifyshopname">{{ $getDashboards->shopify['shopifyshopname'] ?? ''}}</td>
                   </tr>
                   <tr>
                       <td>From Email ID</td>
-                      <td>{{ $getDashboards->smtp['mailfrom'] ?? ''}}</td>
+                      <td class="mailfrom">{{ $getDashboards->smtp['mailfrom'] ?? ''}}</td>
                   </tr>
                   <tr>
                       <td>From Email Name</td>
-                      <td>{{ $getDashboards->smtp['username'] ?? ''}}</td>
+                      <td class="username">{{ $getDashboards->smtp['username'] ?? ''}}</td>
                   </tr>
                   <tr>
                       <td>Product ID Allowed For Coupon (Sticky)</td>
-                      <td>{{ $getAllowedProduct ?? ''}}</td>
+                      <td class="product">{{ $getAllowedProduct ?? ''}}</td>
                   </tr>
                   
                   <tr>
                       <td>CRM Sticky Endpoint</td>
-                      <td>{{ $getDashboards->crm['apiendpoint'] ?? ''}}</td>
+                      <td class="apiendpoint">{{ $getDashboards->crm['apiendpoint'] ?? ''}}</td>
                   </tr>
                   <tr>
                       <td>SMTP Type</td>
-                      <td>{{ $getDashboards->smtp['domain'] ?? ''}}</td>
+                      <td class="domain">{{ $getDashboards->smtp['domain'] ?? ''}}</td>
                   </tr>
               </tbody>
             </table>

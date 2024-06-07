@@ -1,11 +1,12 @@
 <?php
 
-use App\Http\Controllers\CrmController;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\ShopifyController;
-use App\Http\Controllers\SmtpController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\CrmController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SmtpController;
+use App\Http\Controllers\ShopifyController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -24,17 +25,23 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-Route::get('/home/create', [App\Http\Controllers\HomeController::class, 'create'])->name('home.create');
-Route::post('/home/store', [App\Http\Controllers\HomeController::class, 'store'])->name('home.store');
-Route::get('/dashboard/{id}', [App\Http\Controllers\HomeController::class, 'mainData'])->name('main');
-Route::post('/dashboard/getdata', [App\Http\Controllers\HomeController::class, 'getData']);
-Route::put('/update', [App\Http\Controllers\HomeController::class, 'customerUpdate'])->name('home.update');
-Route::post('checkOrder', [App\Http\Controllers\HomeController::class, 'orderCheck'])->name('home.check');
-Route::post('searchOrder', [App\Http\Controllers\HomeController::class, 'orderSearch'])->name('home.search');
-
-Route::any('/create-account/{order_id?}', [App\Http\Controllers\DashboardController::class, 'accountCreate'])->name('dashboard.create-account');
-Route::get('/create-customer', [App\Http\Controllers\DashboardController::class, 'createCustomer']);
+Route::controller(HomeController::class)->group(function(){
+    Route::get('/home', 'index')->name('home');
+    Route::get('/home/create', 'create')->name('home.create');
+    Route::post('/home/store', 'store')->name('home.store');
+    Route::get('/dashboard/{id}', 'mainData')->name('main');
+    Route::get('/dashboard/failed/{id}', 'failedData');
+    Route::post('/dashboard/getdata', 'getData');
+    Route::post('/dashboard/getdashdata', 'getDashData')->name('getDashData');
+    Route::put('/update', 'customerUpdate')->name('home.update');
+    Route::post('checkOrder', 'orderCheck')->name('home.check');
+    Route::post('searchOrder', 'orderSearch')->name('home.search');
+    Route::get('updatePid', 'updatePIDNotRegData');
+});
+Route::controller(DashboardController::class)->group(function(){
+    Route::any('/create-account/{order_id?}', 'accountCreate')->name('dashboard.create-account');
+    Route::get('/create-customer', 'createCustomer');
+});
 Route::any('/send-email', [App\Http\Controllers\EmailController::class, 'sendEmail'])->name('sendEmail');
 
 // Route::post('/webhook', 'WebHookController@index');

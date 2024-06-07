@@ -4,16 +4,17 @@
 @if (session('success'))
   <div class="alert">{{ session('success') }}</div>
 @endif
-<h3 class="mt-3">CRM</h3>
-<div class="row">
+
+<div class="row mt-3">
   <div class="col-lg-10">
-<nav class="navbar navbar-expand navbar-white navbar-light">
-    Filter By
-</nav>
-</div>
-<div class="col-lg-2">
-  <a class="btn btn-primary" style="width:193px;" href="{{route('smtp.create')}}">CREATE</a>
-</div>
+    <ol class="breadcrumb float-sm-right">
+      <li class="breadcrumb-item"><a href="{{ route('home') }}">Back</a></li>
+      <li class="breadcrumb-item active">SMTP</li>
+    </ol>
+  </div>
+  <div class="col-lg-2">
+    <a class="btn btn-primary" style="width:193px;" href="{{route('smtp.create')}}">CREATE</a>
+  </div>
 </div>
 <div class="card-body">
     <table class="table">

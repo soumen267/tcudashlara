@@ -1,7 +1,16 @@
 @extends('layouts.app')
 @section('content')
 <div class="container">
-    <h3 class="mt-3">Shopify</h3>
+    <div class="content-header">
+        <div class="container-fluid">
+                <div class="col-sm-6 mt-2">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('shopify.index') }}">Back</a></li>
+                        <li class="breadcrumb-item active">Shopify Edit</li>
+                    </ol>
+                </div>
+        </div>
+    </div>
     <div class="col-md-12">
         <!-- general form elements -->
         <div class="card card-primary">

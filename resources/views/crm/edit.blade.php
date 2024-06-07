@@ -1,12 +1,21 @@
 @extends('layouts.app')
 @section('content')
 <div class="container">
-    <h3 class="mt-3">CRM</h3>
+    <div class="content-header">
+        <div class="container-fluid">
+                <div class="col-sm-6 mt-2">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('crm.index') }}">Back</a></li>
+                        <li class="breadcrumb-item active">CRM Edit</li>
+                    </ol>
+                </div>
+        </div>
+    </div>
     <div class="col-md-12">
         <!-- general form elements -->
         <div class="card card-primary">
             <div class="card-header">
-                <h3 class="card-title">CRM Edit</h3>
+                <h4 class="card-title">CRM Edit</h4>
             </div>
             <!-- /.card-header -->
             <!-- form start -->

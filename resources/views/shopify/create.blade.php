@@ -1,11 +1,21 @@
 @extends('layouts.app')
 @section('content')
 <div class="container">
+    <div class="content-header">
+        <div class="container-fluid">
+                <div class="col-sm-6 mt-2">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('shopify.index') }}">Back</a></li>
+                        <li class="breadcrumb-item active">Shopify Create</li>
+                    </ol>
+                </div>
+        </div>
+    </div>
     <div class="col-md-12">
         <!-- general form elements -->
         <div class="card card-primary">
             <div class="card-header">
-                <h3 class="card-title">Shopify Create</h3>
+                <h3 class="card-title">Shopify Profile Create</h3>
             </div>
             <!-- /.card-header -->
             <!-- form start -->
