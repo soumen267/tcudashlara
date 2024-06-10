@@ -27,8 +27,6 @@ Auth::routes();
 
 Route::controller(HomeController::class)->group(function(){
     Route::get('/home', 'index')->name('home');
-    Route::get('/home/create', 'create')->name('home.create');
-    Route::post('/home/store', 'store')->name('home.store');
     Route::get('/dashboard/{id}', 'mainData')->name('main');
     Route::get('/dashboard/failed/{id}', 'failedData');
     Route::post('/dashboard/getdata', 'getData');
@@ -39,6 +37,11 @@ Route::controller(HomeController::class)->group(function(){
     Route::get('updatePid', 'updatePIDNotRegData');
 });
 Route::controller(DashboardController::class)->group(function(){
+    Route::get('/dashboard', 'index')->name('dashboard.index');
+    Route::get('/dashboards/create', 'create')->name('dashboards.create');
+    Route::post('/dashboards/store', 'store')->name('dashboards.store');
+    Route::any('/dashboards/edit/{id}', 'edit')->name('dashboards.edit');
+    Route::put('/dashboards/update', 'dashUpdate');
     Route::any('/create-account/{order_id?}', 'accountCreate')->name('dashboard.create-account');
     Route::get('/create-customer', 'createCustomer');
 });

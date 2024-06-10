@@ -11,11 +11,11 @@ a{
   color: #0062cc;
   border-bottom:2px solid #0062cc;
 }
-.dashdiv:hover {
+/* .dashdiv:hover {
     -webkit-box-shadow: -1px -1px 0px 6px rgba(0,0,0,0.12);
     -moz-box-shadow: -1px -1px 0px 6px rgba(0,0,0,0.12);
     box-shadow: -1px -1px 0px 6px rgba(0,0,0,0.12);
-}
+} */
 .box{
     padding:60px 0px;
 }
@@ -66,7 +66,7 @@ a{
                     @if (Auth::user()->name == 'superadmin')
                     <!-- ./col -->
                     <div class="col-lg-4 col-md-4 col-sm-4 col-xs-12 dashdiv" data-id="{{ $row['id'] }}" style="cursor: pointer">
-                        <a href="{{ route('home.create') }}">
+                        <a href="{{ route('dashboards.create') }}">
                         <div class="box-part text-center">
                             <div class="title">
                                 <h4>+</h4>

@@ -51,9 +51,9 @@
             background-repeat: no-repeat;
             background-position: center;
         }
-        .selected{
+        /* .selected{
             color: white;
-        }
+        } */
         .dashhover{
             background: lightsteelblue;border-radius: 17px;font-weight:bold;margin-bottom:5px!important;
         }

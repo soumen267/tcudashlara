@@ -4,13 +4,16 @@ namespace App\Http\Controllers;
 
 use Carbon\Carbon;
 use App\Models\Crm;
+use App\Models\Smtp;
 use App\Models\Product;
+use App\Models\Shopify;
 use App\Models\CrmOrder;
+use App\Models\Dashboard;
+use App\Traits\StickyTrait;
+use App\Traits\ShopifyTrait;
 use Illuminate\Http\Request;
 use App\Models\ShopifyCustomer;
 use App\Models\ShopifyNotregData;
-use App\Traits\ShopifyTrait;
-use App\Traits\StickyTrait;
 
 class DashboardController extends Controller
 {
@@ -290,5 +293,101 @@ class DashboardController extends Controller
         } else {
             echo json_encode($responseArr, true);
         }
+    }
+
+    public function index(){
+        $getDashData = Dashboard::with('crm','shopify','smtp')->where('status','=',1)->get();
+        return view('dashboard.index', compact('getDashData'));
+    }
+
+    public function create(){
+        $getCRMData = Crm::where('status','=',1)->get();
+        $getShopifyData = Shopify::where('status','=',1)->get();
+        $getSMTPData = Smtp::where('status','=',1)->get();
+        return view('dashboard.create', compact('getCRMData','getShopifyData','getSMTPData'));
+    }
+
+    public function store(Request $request){
+        $request->validate([
+            'dashname' => 'required',
+            'crmname' => 'required',
+            'smtpname' => 'required',
+            'shopifyname' => 'required',
+            'products' => 'required'
+        ]);
+
+        $saveDashData = new Dashboard();
+        $saveDashData->dashname = $request->dashname;
+        $saveDashData->crm_id = $request->crmname;
+        $saveDashData->smtp_id = $request->smtpname;
+        $saveDashData->shopify_id = $request->shopifyname;
+        $products = explode(',',$request->products);
+        $saveDashData->save();
+        foreach($products as $row){
+            $data = new Product();
+            $data->dashboard_id = $saveDashData->id;
+            $data->products = $row;
+            $data->save();
+        }
+        return redirect()->route('dashboard.index')->with('success', 'Dashboard created successfully!');
+    }
+
+    public function edit($id)
+    {
+        $editDashboard = Dashboard::with('shopify','crm','smtp','products')->findOrFail($id);
+        $getProducts = $editDashboard['products']->pluck('products')->toArray();
+        $getProductsData = implode(',',$getProducts);
+        $getCRMData = Crm::where('status','=',1)->get();
+        $getShopifyData = Shopify::where('status','=',1)->get();
+        $getSMTPData = Smtp::where('status','=',1)->get();
+        
+        return view('dashboard.edit',compact('editDashboard','getCRMData','getShopifyData','getSMTPData','getProductsData'));
+    }
+
+    // public function update(Request $request, Shopify $shopify)
+    // {
+    //     $request->validate([
+    //         'shopifyapikey' => 'required',
+    //         'shopifyapipassword' => 'required',
+    //         'shopifyshopname' => 'required',
+    //         'shopifydomainname' => 'required',
+    //         'storeurl' => 'required'
+    //     ]);
+    //     $saveShopifyData = Shopify::findOrFail($shopify->id);
+    //     $saveShopifyData->shopifyapikey = $request->shopifyapikey;
+    //     $saveShopifyData->shopifyapipassword = $request->shopifyapipassword;
+    //     $saveShopifyData->shopifyshopname = $request->shopifyshopname;
+    //     $saveShopifyData->shopifydomainname = $request->shopifydomainname;
+    //     $saveShopifyData->storeurl = $request->storeurl;
+    //     if($saveShopifyData){
+    //         $saveShopifyData->update();
+    //         return redirect()->route('shopify.index')->with('success', 'Shopify Data added successfully!');
+    //     }else{
+    //         return redirect()->route('shopify.index')->with('error', 'Something went wrong!');
+    //     }
+    // }
+    public function dashUpdate(Request $request){
+        $request->validate([
+            'dashname' => 'required',
+            'crm_id' => 'required',
+            'smtp_id' => 'required',
+            'shopify_id' => 'required',
+            'products' => 'required'
+            ]);
+        $saveData = Dashboard::with('products')->findOrFail($request->id);
+        $saveData->dashname = $request->dashname;
+        $saveData->crm_id = $request->crm_id;
+        $saveData->smtp_id = $request->smtp_id;
+        $saveData->shopify_id = $request->shopify_id;
+        $products = explode(',',$request->products);
+        $getProducts = Product::where('dashboard_id', $request->id)->delete();
+        $saveData->save();
+        foreach ($products as $key => $value) {
+            $data = new Product();
+            $data->dashboard_id = $saveData->id;
+            $data->products = $value;
+            $data->save();
+        }
+        return redirect()->route('dashboard.index')->with('success', 'Dashboard created successfully!');
     }
 }

@@ -11,6 +11,8 @@ class Product extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['dashboard_id'];
+    
     public function dashb()
     {
         return $this->belongsTo(Dashboard::class, 'dashboard_id');

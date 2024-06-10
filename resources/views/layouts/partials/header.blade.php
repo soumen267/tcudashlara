@@ -10,14 +10,13 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
             <!-- Left Side Of Navbar -->
             @if (Auth::user()->name == 'superadmin')
-            <ul class="navbar-nav me-auto">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 @if (Request::segment(1) === 'home')
-                    <div class="btn-group">
-                        <li class="nav-item d-none d-sm-inline-block"><a href="{{route('crm.index')}}" class="nav-link bg-primary text-white mr-2">CRM</a></li>
-                        <li class="nav-item d-none d-sm-inline-block"><a href="{{route('smtp.index')}}" class="nav-link bg-secondary text-white">SMTP</a></li>
-                        <li class="nav-item d-none d-sm-inline-block"><a href="{{route('shopify.index')}}" class="nav-link bg-danger text-white">SHOPIFY</a></li>
-                    </div>
-                @endif                
+                    <li class="nav-item"><a href="{{route('crm.index')}}" class="nav-link bg-primary text-white mr-2">CRM</a></li>
+                    <li class="nav-item"><a href="{{route('smtp.index')}}" class="nav-link bg-secondary text-white">SMTP</a></li>
+                    <li class="nav-item"><a href="{{route('shopify.index')}}" class="nav-link bg-danger text-white">SHOPIFY</a></li>
+                    <li class="nav-item"><a href="{{route('dashboard.index')}}" class="nav-link bg-danger text-white">DASH</a></li>
+                @endif
             </ul>
             @endif
             <!-- Right Side Of Navbar -->
