@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('raw_crm_orders', function (Blueprint $table) {
+        Schema::create('crm_orders', function (Blueprint $table) {
             $table->id();
             $table->bigInteger('orderId');
             $table->string('customerId');
@@ -20,11 +20,11 @@ return new class extends Migration
             $table->string('firstName');
             $table->string('lastName');
             $table->string('pid');
-            $table->text('api_response')->nullable();
             $table->tinyInteger('dashboard');
+            $table->text('api_response')->nullable();
             $table->enum('status',['1','0'])->default('1');
-            $table->timestamps();
             $table->softDeletes();
+            $table->timestamps();
         });
     }
 
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('raw_crm_orders');
+        Schema::dropIfExists('crm_orders');
     }
 };

@@ -22,7 +22,6 @@ return new class extends Migration
             $table->string('coupon_code');
             $table->string('discount_code_id');
             $table->string('price_rule_id');
-            // $table->enum('status', ['Canceled','Refunded','Deleted'])->nullable()->default('Active');
             $table->enum('mail_status', ['Sent','Not Sent','Failed'])->nullable()->default('Not Sent');
             $table->string('mail_response');
             $table->longText('webhook_response');

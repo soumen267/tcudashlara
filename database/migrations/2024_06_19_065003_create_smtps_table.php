@@ -11,13 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shopify_notreg_data', function (Blueprint $table) {
+        Schema::create('smtps', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('order_id');
+            $table->string('name');
+            $table->string('domain');
             $table->string('email');
-            $table->string('error_msg');
-            $table->string('mail_response');
+            $table->string('mailfrom');
+            $table->string('api');
+            $table->string('type');
+            $table->string('emailtemplatepath');
+            $table->enum('status',['1','0'])->default('1');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
@@ -26,6 +31,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shopify_notreg_data');
+        Schema::dropIfExists('smtps');
     }
 };

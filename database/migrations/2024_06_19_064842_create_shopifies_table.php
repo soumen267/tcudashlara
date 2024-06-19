@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('shopifyapipassword');
             $table->string('shopifyshopname');
             $table->string('shopifydomainname');
+            $table->string('shopifywebhookhash')->nullable();
             $table->enum('status',['1','0'])->default('1');
             $table->timestamps();
             $table->softDeletes();
