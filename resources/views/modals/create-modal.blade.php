@@ -5,7 +5,7 @@
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
-          <h4 class="modal-title">Create Customer</h4>
+          <h4 class="modal-title heading">Create Customer</h4>
           <button type="button" class="close updClose" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">×</span>
           </button>

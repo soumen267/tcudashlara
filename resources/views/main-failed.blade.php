@@ -7,27 +7,27 @@
           <form class="d-inline-flex searchFrm" action="" method="get">
             <div class="form-group" style="margin: 6px;">
               <label for="name" class="">Status:</label>
-              <a href="{{ url("dashboard", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-primary mr-3 mb-2 success">Success</a>
-              <a href="{{ url("dashboard/failed", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-danger mr-3 mb-2 failed">Failed</a>
+              <a href="{{ url("dashboard", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-primary mr-3 mb-2 success"><i class="fa fa-check"></i> Success</a>
+              <a href="{{ url("dashboard/failed", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-danger mr-3 mb-2 failed"><i class="fa fa-exclamation"></i> Failed</a>
             </div>
             <div class="form-group mt-1">
               <label for="date" class="sr-only">date</label>
               <input type="text" class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
             </div>
             <div class="form-group mt-1">
-              <button value="Search" class="btn btn-primary mr-3 mb-2 filter1" type="buttton" style="display: inline;margin-left: 7px;">Search</button>        
-              <button class="btn btn-danger mr-3 mb-2" id="reset1" type="button" style="margin-left: 2px;">Reset</button>
+              <button value="Search" class="btn btn-primary mr-3 mb-2 filter1" type="buttton" style="display: inline;margin-left: 7px;"><i class="fa fa-search" aria-hidden="true"></i> Search</button>        
+              <button class="btn btn-danger mr-3 mb-2" id="reset1" type="button" style="margin-left: 2px;"><i class="fa fa-refresh" aria-hidden="true"></i> Reset</button>
             </div>
           </form>
         </div>
         <div class="col-lg-4">
-            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="0">Add Customer</button>
+            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="0"><i class="fa fa-plus" aria-hidden="true"></i> Add Customer</button>
             <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="1">Credit Customer</button>
-            <a href="javascript:void(0)" class="btn btn-info mx-2" data-id="{{ \Helper::getIdfromUrl() }}" role="button">Config Details</a>
+            <a href="javascript:void(0)" class="btn btn-info mx-1 config-details1" data-id="{{ \Helper::getIdfromUrl() }}" role="button"><i class="fa fa-info-circle" aria-hidden="true"></i> Config Details</a>
         </div>
       </div>
       <div class="table-responsive">
-        <table class="table table-bordered table-striped dataTable" id="dataTable2" width="100%">
+        <table class="table table-bordered table-striped dataTable display nowrap" id="dataTable2" width="100%">
           <thead>
             <tr>
               <th>ID</th>
@@ -68,7 +68,7 @@ $(document).ready(function () {
   $('.failed').trigger('click');
   $('.failed').addClass('actives');
 });
-$(".mx-2").click(function (e) {
+$(".config-details1").click(function (e) {
   e.preventDefault();
   var id = $(this).data("id");
   $.ajax({
@@ -79,6 +79,7 @@ $(".mx-2").click(function (e) {
     success: function (response) {
         console.log(response);
         $("#modal-xl").show();
+        $(".shopifystoreurl").text(response.getDashboards.shopify.storeurl);
         $(".shopifydomainname").text(response.getDashboards.shopify.shopifydomainname);
         $(".shopifyshopname").text(response.getDashboards.shopify.shopifyshopname);
         $(".mailfrom").text(response.getDashboards.smtp.mailfrom);
@@ -128,6 +129,8 @@ function load_data1(from_date = '', to_date = '', type = '')
         serverSide: true,
         responsive: true,
         destroy: true,
+        scrollCollapse: true,
+        scrollY: '300px',
         "bSortable": true,
         ajax: {
           url: Id,
@@ -155,10 +158,48 @@ function load_data1(from_date = '', to_date = '', type = '')
         orientation : 'landscape',
         pageSize : 'A0',
         buttons: [
-          'copy', 'csv', 'excel', 'print', { extend: 'pdf',exportOptions: {
-            columns: 'th:not(:last-child)'
-            }
-          }
+          {
+              extend: 'excelHtml5',
+              text: '<i class="fa fa-file-excel-o"></i> Excel',
+              titleAttr: 'Export to Excel',
+              exportOptions: {
+                columns: 'th:not(:last-child)',
+              }
+          },
+          {
+              extend: 'csvHtml5',
+              text: '<i class="fa fa-file-text-o"></i> CSV',
+              titleAttr: 'CSV',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+              }
+          },
+          {
+              extend: 'pdfHtml5',
+              text: '<i class="fa fa-file-pdf-o"></i> PDF',
+              titleAttr: 'PDF',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+                  orientation: 'landscape',
+                  pageSize: 'LEGAL'
+              },
+          },
+          {
+              extend: 'copy',
+              text: '<i class="fa fa-file-pdf-o"></i> Copy',
+              titleAttr: 'Copy',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+              },
+          },
+          {
+              extend: 'print',
+              text: '<i class="fa fa-file-pdf-o"></i> Print',
+              titleAttr: 'Print',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+              },
+          },
         ],
         "pagingType": "full_numbers"        
     });

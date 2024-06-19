@@ -21,9 +21,7 @@
               <tbody>
                   <tr>
                       <td>Shopify Store</td>
-                      <td>
-                          <input type="text" class="form-control storeurl" name="storeurl" placeholder="Shopify Store" value="{{ $getDashboards->shopify['storeurl'] ?? ''}}">
-                      </td>
+                      <td class="shopifystoreurl">{{ $getDashboards->shopify['storeurl'] ?? ''}}</td>
                   </tr>
                   <tr>
                       <td>Shopify API Version</td>

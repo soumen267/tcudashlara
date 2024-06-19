@@ -34,7 +34,6 @@ Route::controller(HomeController::class)->group(function(){
     Route::put('/update', 'customerUpdate')->name('home.update');
     Route::post('checkOrder', 'orderCheck')->name('home.check');
     Route::post('searchOrder', 'orderSearch')->name('home.search');
-    Route::get('updatePid', 'updatePIDNotRegData');
 });
 Route::controller(DashboardController::class)->group(function(){
     Route::get('/dashboard', 'index')->name('dashboard.index');
@@ -44,6 +43,8 @@ Route::controller(DashboardController::class)->group(function(){
     Route::put('/dashboards/update', 'dashUpdate');
     Route::any('/create-account/{order_id?}', 'accountCreate')->name('dashboard.create-account');
     Route::get('/create-customer', 'createCustomer');
+    Route::get('updatePid', 'updatePIDNotRegData');
+    Route::any('insertCRMS', 'shopifyToCrms');
 });
 Route::any('/send-email', [App\Http\Controllers\EmailController::class, 'sendEmail'])->name('sendEmail');
 

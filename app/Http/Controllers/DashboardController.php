@@ -14,7 +14,8 @@ use App\Traits\ShopifyTrait;
 use Illuminate\Http\Request;
 use App\Models\ShopifyCustomer;
 use App\Models\ShopifyNotregData;
-
+use Illuminate\Support\Facades\DB;
+use App\Helpers\helper;
 class DashboardController extends Controller
 {
     use ShopifyTrait, StickyTrait;
@@ -25,6 +26,8 @@ class DashboardController extends Controller
         $responseArr = [];
         $ordersProduct = [];
         $getProducts = [];
+        $response = [];
+        $balance = 0;
         $orderId = ($request->order_id ? $request->order_id : '');
         $CheckOrders = CrmOrder::where('orderId', '=', $orderId)->first();
         if ($CheckOrders) {
@@ -54,7 +57,7 @@ class DashboardController extends Controller
                         $ordersProduct,
                         $getProducts
                     );
-                    // dd($CheckAllowedProduct);
+                    //dd($getDash['dashId']);
                 }
                 if (sizeof($CheckAllowedProduct) > 0) {
                     $TotalAllowedOrderPrice = 0;
@@ -73,10 +76,18 @@ class DashboardController extends Controller
                 }
                 // dd ($couponAmount);
                 if (sizeof($CheckAllowedProduct) > 0) {
-                    $CheckOrders = CrmOrder::where('emailAddress', '=', $response['email_address'])->first();
-                    $CheckCustomer = ShopifyCustomer::where('status', '=', 1)->get();
-                    if (sizeof($CheckCustomer) > 0) {
-                        $ExistsCustomer = $CheckCustomer[0];
+                    //$CheckOrders = CrmOrder::where('emailAddress', '=', $response['email_address'])->first();
+                    $getDash = Helper::getDashboardId($response);
+                    $value = $response["email_address"];
+                    $CheckCustomers = CrmOrder::with(['shopifyCustomers'])->whereHas('shopifyCustomers', function($q) use ($value){
+                        $q->where('email_address', $value);
+                    })
+                    ->where('dashboard',$getDash)
+                    ->first();
+                    //dd($CheckCustomers->shopifyCustomers);
+                    //$CheckCustomer = ShopifyCustomer::where('status', '=', 'Active')->get();
+                    if ($CheckCustomers->shopifyCustomers != '') {
+                        $ExistsCustomer = $CheckCustomers->shopifyCustomers;
                         $responseArr["CustomerStatus"] = "Customer already exists";
                         $responseArr["CustomerId"] = $ExistsCustomer["shopify_customer_id"];
                         $responseArr["CustomerUsername"] = $ExistsCustomer["email_address"];
@@ -100,28 +111,28 @@ class DashboardController extends Controller
                             ]
                         ];
                         $getProd = Product::with('dashb.shopify')->where('products', '=', $CheckAllowedProduct)->first();
-                        $apiKey = $getProd->dashb->shopify['shopifyapikey'];
-                        $apiPassword = $getProd->dashb->shopify['shopifyapipassword'];
-                        $domain = $getProd->dashb->shopify['shopifydomainname'];
+                        $storename = $getProd->dashb->shopify['storeurl'];
+                        $token = $getProd->dashb->shopify['shopifyapipassword'];
                         $dashID = $getProd->dashboard_id;
-
-                        $response1 = $this->createCustomer($CustomerData);
-                        // dd($response1);
-                        if ($response1['code'] == '422') {
+                        $response1 = $this->createCustomer($CustomerData, $storename, $token);
+                        //dd($response1);
+                        if ($response1['code'] == '422' || $response1['code'] == '401') {
                             // dd($response1->getStatusCode());
                             // dd($response1->getBody()->getContents());
                             $json = $response1['msg'];
                             $error = json_decode($json, true);
                             $responseArr["error_code"] = $response1['code'];
                             $responseArr["error_message"] = $error;
-
                             $error_reason = "";
-                            foreach ($error["errors"] as $key => $value) {
-                                $error_reason .=
-                                    $key . " " . $error["errors"][$key][0] . " & ";
+                            if($response1['code'] == '401'){
+                                $error_reason = $error['errors'];
+                            }elseif($response1['code'] == '422'){
+                                foreach ($error["errors"] as $key => $value) {
+                                    $error_reason .=
+                                        $key . " " . $error["errors"][$key][0] . " & ";
+                                }
+                                $error_reason = substr($error_reason, 0, -2);
                             }
-                            $error_reason = substr($error_reason, 0, -2);
-
                             $mail_response = [];
                             //$mail_response = sendMail($response['firstName'],$response['lastName'],$response['emailAddress'],$response['phoneNumber'],$_REQUEST['order_id'], $error_reason);
 
@@ -138,7 +149,6 @@ class DashboardController extends Controller
                                 '<tr><td colspan="2"><span class="text-danger">' .
                                 $error_reason .
                                 "</span></td></tr>";
-                            //die();
                         }else{
                             $saveShopify = new ShopifyCustomer();
                             $saveShopify->name = $response1['msg']['customer']["first_name"] . " " . $response1['msg']['customer']["last_name"];
@@ -148,8 +158,7 @@ class DashboardController extends Controller
                             $saveShopify->phone = $response1['msg']['customer']["phone"];
                             $saveShopify->crm_response = json_encode($response, true);
                             $saveShopify->status = "Active";
-                            $saveShopify->save();
-    
+                            $saveShopify->save(); 
     
                             $responseArr["CustomerStatus"] = "Customer Created";
                             $responseArr["CustomerId"] = $saveShopify["shopify_customer_id"];
@@ -168,20 +177,37 @@ class DashboardController extends Controller
             $ordersProduct,
             $getProducts
         );
+
         if (sizeof($CheckAllowedProductForGift) > 0) {
-            $CheckCustomer = ShopifyCustomer::where('email_address', '=', $response['email_address'])->first();
-            $generateCode = strtoupper(
-                $this->generatePassword(8, "discount") .
-                    "CC" .
-                    $CheckCustomer->id
-            );
-            $balance = $CheckCustomer["balance"];
-            $balance = $balance - $couponAmounts;
-            $couponCode = $CheckCustomer["coupon_code"] ? $CheckCustomer["coupon_code"] : $generateCode;
-            $priceRuleId = $CheckCustomer["price_rule_id"] ? $CheckCustomer["price_rule_id"] : "";
-            if ($CheckCustomer["price_rule_id"] == null || $CheckCustomer["price_rule_id"] == "") {
-                $dateNow = Carbon::now()->toIso8601String();
-                $priceRuleData = [
+            $getDash = Helper::getDashboardId($response);
+            $shopifyCustomerID = '';
+            $ViewOrder = $response["email_address"];
+            $CheckCustomers = CrmOrder::with(['shopifyCustomers'])->whereHas('shopifyCustomers', function($q) use ($ViewOrder){
+                                            $q->where('email_address', $ViewOrder);
+                                        })
+                                        ->where('dashboard',$getDash)
+                                        ->first();
+            //$CheckShopifyCustomer = $CheckCustomers->shopifyCustomers;
+            $getProd = Product::with('dashb.shopify')->where('products', '=', $CheckAllowedProductForGift)->first();
+            $storename = $getProd->dashb->shopify['storeurl'];
+            $token = $getProd->dashb->shopify['shopifyapipassword'];
+            $dashID = $getProd->dashboard_id;
+            if($CheckCustomers == ''){
+                $customerId = $saveShopify->id;
+                $checkLastInsertShopifyCustomers = ShopifyCustomer::where('id', $customerId)->first();
+                $shopifyCustomerID = $customerId;
+                $generateCode = strtoupper(
+                    $this->generatePassword(8, "discount") .
+                        "CC" .
+                        $customerId
+                );
+                $balance = $checkLastInsertShopifyCustomers["balance"];
+                $balance = $balance - $couponAmounts;
+                $couponCode = $checkLastInsertShopifyCustomers["coupon_code"] ? $checkLastInsertShopifyCustomers["coupon_code"] : $generateCode;
+                $priceRuleId = $checkLastInsertShopifyCustomers["price_rule_id"] ? $checkLastInsertShopifyCustomers["price_rule_id"] : "";
+                if ($checkLastInsertShopifyCustomers["price_rule_id"] == null || $checkLastInsertShopifyCustomers["price_rule_id"] == "") {
+                    $dateNow = Carbon::now()->toIso8601String();
+                    $priceRuleData = [
                     "price_rule" => [
                         "title" => $couponCode,
                         "target_type" => "line_item",
@@ -191,67 +217,72 @@ class DashboardController extends Controller
                         "value" => $balance,
                         "customer_selection" => "prerequisite",
                         "prerequisite_customer_ids" => [
-                            $CheckCustomer["shopify_customer_id"]
+                            $checkLastInsertShopifyCustomers["shopify_customer_id"]
                         ],
                         "starts_at" => $dateNow
                         ]
                     ];
-                $priceuleresponse = $this->createPriceRule($priceRuleData);
-                // dd($priceuleresponse);
-                $priceRuleId = $priceuleresponse["msg"]["price_rule"]["id"];
-                ShopifyCustomer::where('id', $CheckCustomer->id)->update([
-                    "coupon_code" => $couponCode,
-                    "balance" => $balance,
-                    "price_rule_id" => $priceuleresponse["msg"]["price_rule"]["id"],
-                ]);
-                $responseArr["PriceRuleStatus"] =
-                    "Price Rule Created. Id: " . $priceRuleId;
-            } else {
-                //dd("Hi");
+                    $priceuleresponse = $this->createPriceRule($priceRuleData, $storename, $token);
+                    $priceRuleId = $priceuleresponse["msg"]["price_rule"]["id"];
+                    ShopifyCustomer::where('id', $customerId)->update([
+                        "coupon_code" => $couponCode,
+                        "balance" => $balance,
+                        "price_rule_id" => $priceuleresponse["msg"]["price_rule"]["id"],
+                    ]);
+                    $responseArr["PriceRuleStatus"] =
+                        "Price Rule Created. Id: " . $priceRuleId;
+                    }
+
+                    if ($checkLastInsertShopifyCustomers["discount_code_id"] == null || $checkLastInsertShopifyCustomers["discount_code_id"] == "") {
+                        settype($priceRuleId, "integer");
+                        $couponData = [
+                            "discount_code" => [
+                                "id" => $priceRuleId,
+                                "code"=> $couponCode
+                            ]
+                        ];
+                        $couponresponse = $this->createDiscountCode($couponData, $storename, $token, $priceRuleId);
+                        // print_r($couponresponse);
+                        // die();
+                        $updatepriceRuleData = ShopifyCustomer::where('id', $checkLastInsertShopifyCustomers["id"])->update([
+                            "discount_code_id" => $couponresponse["msg"]["discount_code"]["id"],
+                        ]);
+        
+                        if ($updatepriceRuleData) {
+                            $responseArr["DiscountCodeStatus"] = "Discount Code Created";
+                        }
+                        $responseArr["DiscountCodeId"] = $couponresponse["msg"]["discount_code"]["id"];
+                        $responseArr["DiscountCode"] = $couponCode;
+                        $responseArr["DiscountBalance"] = $balance;
+                    }
+
+            }else{
+                $balance = $CheckCustomers->shopifyCustomers["balance"];
+                $balance = $balance - $couponAmounts;
+                $shopifyCustomerID = $CheckCustomers->shopifyCustomers['id'];
+                $priceRuleId = $CheckCustomers->shopifyCustomers["price_rule_id"];
                 settype($priceRuleId, "integer");
-                $priceRuleData = [
-                   "price_rule"=> [
-                        "id"=> $priceRuleId,
-                        "value"=> $balance
-                   ]
-                ];
-                $priceuleresponse = $this->updatePriceRule($priceRuleData, $priceRuleId);
-                ShopifyCustomer::where('id', $CheckCustomer["id"])->update([
-                    "balance" => $balance,
-                ]);
-                $responseArr["PriceRuleStatus"] = "Price Rule Updated. Id: " . $priceRuleId;
+                        $priceRuleData = [
+                        "price_rule"=> [
+                                "id"=> $priceRuleId,
+                                "value"=> $balance
+                        ]
+                        ];
+                        $priceuleresponse = $this->updatePriceRule($priceRuleData, $storename, $token, $priceRuleId);
+                        ShopifyCustomer::where('id', $CheckCustomers->shopifyCustomers["id"])->update([
+                            "balance" => $balance,
+                        ]);
+                        $responseArr["PriceRuleStatus"] = "Price Rule Updated. Id: " . $priceRuleId;
+
+                        $responseArr["DiscountCodeStatus"] = "Discount Code Already Exist";
+                        $responseArr["DiscountCodeId"] = $CheckCustomers->shopifyCustomers["discount_code_id"];
+                        $responseArr["DiscountCode"] = $CheckCustomers->shopifyCustomers["coupon_code"];
+                        $responseArr["DiscountBalance"] = $CheckCustomers->shopifyCustomers["balance"];
             }
 
-            if ($CheckCustomer["discount_code_id"] == null || $CheckCustomer["discount_code_id"] == "") {
-                settype($priceRuleId, "integer");
-                $couponData = [
-                    "discount_code" => [
-                        "id" => $priceRuleId,
-                        "code"=> $couponCode
-                    ]
-                ];
-                $couponresponse = $this->createDiscountCode($couponData, $priceRuleId);
-                // print_r($couponresponse);
-                // die();
-                $updatepriceRuleData = ShopifyCustomer::where('id', $CheckCustomer["id"])->update([
-                    "discount_code_id" => $couponresponse["msg"]["discount_code"]["id"],
-                ]);
-
-                if ($updatepriceRuleData) {
-                    $responseArr["DiscountCodeStatus"] = "Discount Code Created";
-                }
-                $responseArr["DiscountCodeId"] = $couponresponse["msg"]["discount_code"]["id"];
-                $responseArr["DiscountCodeCode"] = $couponCode;
-                $responseArr["DiscountBalance"] = $balance;
-            } else {
-                $responseArr["DiscountCodeStatus"] = "Discount Code Already Exist";
-                $responseArr["DiscountCodeId"] = $CheckCustomer["discount_code_id"];
-                $responseArr["DiscountCodeCode"] = $CheckCustomer["coupon_code"];
-                $responseArr["DiscountBalance"] = $CheckCustomer["balance"];
-            }
             $crmOrders = new CrmOrder();
             $crmOrders->orderId = $response["order_id"];
-            $crmOrders->shopify_customers_id = $CheckCustomer["id"];
+            $crmOrders->shopify_customers_id = $shopifyCustomerID;
             $crmOrders->customerId = $response["customer_id"];
             $crmOrders->emailAddress = $response["email_address"];
             $crmOrders->phoneNumber = $response["customers_telephone"];
@@ -262,7 +293,7 @@ class DashboardController extends Controller
             $crmOrders->dashboard = $dashID;
             $crmOrders->api_response = json_encode($responseArr, true);
             $crmOrders->save();
-        }
+            }
 
         $returnType = isset($_REQUEST["return_type"]) ? $_REQUEST["return_type"] : "json";
         // dd($returnType);
@@ -270,7 +301,7 @@ class DashboardController extends Controller
             $html = "";
             $html .=
                 "<tr><th>Shopify Coupon Code</th><td>" .
-                $responseArr["DiscountCodeCode"] .
+                $responseArr["DiscountCode"] .
                 "</td></tr>";
             $html .=
                 "<tr><th>Shopify Coupon Balance</th><td>" .
@@ -390,4 +421,60 @@ class DashboardController extends Controller
         }
         return redirect()->route('dashboard.index')->with('success', 'Dashboard created successfully!');
     }
+
+    public function shopifyToCrms(){
+        //ini_set('max_execution_time', 120 ); // time in seconds
+        $getData = DB::table('shopify_customers')->where('status','active')->limit(100)->get();
+        foreach($getData as $value){
+            $getcal = json_decode($value->crm_response, true);
+            $pid = Helper::getDashboardId($getcal)['productID'][0] ? Helper::getDashboardId($getcal)['productID'][0] : '';
+            $dashboardId = Helper::getDashboardId($getcal)['dashId'] ? Helper::getDashboardId($getcal)['dashId'] : '';
+            if(CrmOrder::where('orderId', '=',$getcal['order_id'])->exists()){
+                echo "OrderID already exists ".$getcal['order_id']."<br />";
+            }else{
+                $saveData = [
+                    'orderId' => $getcal['order_id'],
+                    'shopify_customers_id' => $value->id,
+                    'customerId' => $getcal['customer_id'],
+                    'emailAddress' => $getcal['email_address'],
+                    'phoneNumber' => $getcal['customers_telephone'],
+                    'firstName' => $getcal['first_name'],
+                    'lastName' => $getcal['last_name'],
+                    'pid' => $pid,
+                    'api_response' => $value->crm_response,
+                    'dashboard' => $dashboardId,
+                    'status' => 1,
+                    'created_at' => $getcal['created_at'],
+                    'updated_at' => $getcal['updated_at'],
+            ];
+                $insertCRM = CrmOrder::insert($saveData);                
+            }
+        }
+    }
+
+    public function updatePIDNotRegData(){
+        $getOrderID = ShopifyNotregData::where('pid','=',0)->pluck('order_id');
+        $orderID = [];
+        foreach($getOrderID as $key => $orderid){
+            $orderID[] = $orderid;
+        }
+        $orderId = [
+            'order_id' => $orderID
+        ];
+        $apiurl = env("STICKY_URL");
+        $key = env("STICKY_API_USERNAME");
+        $pwd = env("STICKY_API_PASSWORD");
+        $ViewOrder = $this->orderView($apiurl, $orderId, $key, $pwd);
+        $oid = '';
+        $data = '';
+        foreach($ViewOrder['data'] as $row){
+            $oid = $row['order_id'];
+            $data = $row['products'][0]['product_id'];
+        }
+        ShopifyNotregData::where('order_id','=',$oid)
+                          ->where('pid','0')
+                          ->update([
+                                'pid' => $data,
+        ]);
+    }   
 }

@@ -15,6 +15,7 @@
         <p class="text-center w-100 update-data-msg" style="display:none;" >Customer Data Updated.</p>
         <div class="modal-body">
           <div class="container-fluid my-4">
+            <input type="hidden" class="form-control dashboard" name="dashboard">
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">First Name:</label>
               <div class="col-sm-9">

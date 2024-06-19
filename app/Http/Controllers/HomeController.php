@@ -100,10 +100,11 @@ class HomeController extends Controller
             if ($request->ajax()) {
                 if ($request->filled('from_date') && $request->filled('to_date')) {
                         $now = \Carbon\Carbon::now();
-                        $getDatas = DB::table('crm_orders')
-                        ->join('shopify_customers', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
+                        $getDatas = DB::table('shopify_customers')
+                        ->join('crm_orders', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
                         ->select(
-                            'crm_orders.id',
+                            'crm_orders.id AS ids',
+                            'shopify_customers.id',
                             'shopify_customers.name',
                             'shopify_customers.email_address',
                             'shopify_customers.phone',
@@ -114,7 +115,9 @@ class HomeController extends Controller
                             'shopify_customers.created_at'
                         )
                             ->whereBetween('shopify_customers.created_at', [$request->from_date, $request->to_date])
-                            ->where('dashboard', '=', $id);
+                            ->where('crm_orders.dashboard', '=', $id)
+                            ->distinct()
+                            ->groupBy('shopify_customers.email_address');
                 } else {
                     $now = Carbon::now();
                     $getDatas = Helper::getCrmShopifyData($id);
@@ -128,11 +131,11 @@ class HomeController extends Controller
                         }
                     })
                     ->addColumn('action', function ($row) {
-                        $html = '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-success btn-sm edit-details" style="margin:3px;">Edit</a>';
+                        $html = '<a data-id="' . $row->id . '" data-dashid="' . Helper::getIdfromUrl() . '" data-crmid="' . $row->ids . '" class="btn btn-success btn-sm edit-details" style="margin:3px;"><i class="fa fa-edit"></i> Edit</a>';
                         if($row->mail_status == 'Sent'){
-                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-danger btn-sm sendmail">Re-Send Mail</a>';
+                            $html .= '<a data-id="' . $row->id . '"  data-crmid="' . $row->ids . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Re-Send Mail</a>';
                         }else{
-                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->id . '" class="btn btn-danger btn-sm sendmail">Send Mail</a>';
+                            $html .= '<a data-id="' . $row->id . '" data-crmid="' . $row->ids . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Send Mail</a>';
                         }
                         
                         return $html;
@@ -179,14 +182,14 @@ class HomeController extends Controller
     public function getData(Request $request){
         $getData = DB::table('crm_orders')
                     ->join('shopify_customers', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
-                    ->select('crm_orders.id',
+                    ->select('shopify_customers.id',
                             'shopify_customers.name',
                             'shopify_customers.email_address',
                             'shopify_customers.password',
                             'shopify_customers.phone',
                             'shopify_customers.coupon_code',
                             'shopify_customers.balance',
-                    )->where('crm_orders.id', $request->id)->first();
+                    )->where('shopify_customers.id', $request->id)->first();
         return response()->json($getData);
     }
 
@@ -213,10 +216,27 @@ class HomeController extends Controller
             'message'=>'Project updated successfully!',
         ]);
         }else{
-        $CheckCustomer = CrmOrder::with('shopifyCustomers')->where('id', $request->update_id)->first();
+        //$CheckCustomer = CrmOrder::with('shopifyCustomers')->where('id', $request->update_id)->first();
+        $ID = $request->update_id;
+        $dashID = $request->dashboard;
+        $email = $request->update_email;
+        //$CheckCustomer = ShopifyCustomer::where('id', $request->update_id)->where('email_address',$request->update_email)->first();
+        $CheckCustomer = CrmOrder::with(['shopifyCustomers'])
+                                    ->whereHas('shopifyCustomers', function($q) use ($ID, $email){
+                                            $q->where('id', $ID);
+                                            $q->where('email_address', $email);
+        })
+        ->where('dashboard',$dashID)
+        ->first();
+        $getDatas = Dashboard::with('crm','shopify','smtp')->where('id','=',$dashID)->first();
+        $storename = $getDatas->shopify['storeurl'];
+        $token = $getDatas->shopify['shopifyapipassword'];
+
         // dd($CheckCustomer);
         if($CheckCustomer){
+            // $customerId = $CheckCustomer->shopifyCustomers->shopify_customer_id ? $CheckCustomer->shopifyCustomers->shopify_customer_id : "";
             $customerId = $CheckCustomer->shopifyCustomers->shopify_customer_id ? $CheckCustomer->shopifyCustomers->shopify_customer_id : "";
+            //dd($customerId);
             settype($customerId, "integer");
             $CustomerData = [
                     "customer" => [
@@ -228,7 +248,7 @@ class HomeController extends Controller
                 ]
             ];
             // dd(json_encode($CustomerData));
-            $CustomerResponse = $this->updateCustomer($CustomerData, $customerId);
+            $CustomerResponse = $this->updateCustomer($CustomerData, $customerId, $storename, $token);
             //dd($CustomerResponse);
             if ($CustomerResponse['code'] == '422') {
                 $json = $CustomerResponse['msg'];
@@ -244,11 +264,12 @@ class HomeController extends Controller
                     'error_code' => $CustomerResponse['code'],
                     'error_reason' => $error_reason
                 ]);
-                die();
             }else{
-                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->first();
+                // $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->first();
+                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->first();
                 if($CheckShopifyCustomer){
-                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->update([
+                    //ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->update([
+                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->update([
                         "name" => $CustomerResponse['msg']['customer']["first_name"] . " " . $CustomerResponse['msg']['customer']["last_name"],
                         "email_address" => $CustomerResponse['msg']['customer']['email'],
                         "phone" => $CustomerResponse['msg']['customer']['phone'],
@@ -284,11 +305,11 @@ class HomeController extends Controller
             'order_id' => $request->order_id
         ];
         $ViewOrder = $this->orderView($apiurl, $orderId, $key, $pwd);
-        if($ViewOrder["response_code"] != 100){
+        if($ViewOrder["response_code"] != 100 && $ViewOrder["response_code"] != 350){
             $html = '<tr><td colspan="2">'.$ViewOrder['error_message'].'</td></tr>';
-            echo $html;
-            die();
-        }
+        }else if($ViewOrder["response_code"] == 350){
+            $html = 'Invalid Order ID';
+        }else{
         $ordersProduct = [];
         foreach ($ViewOrder['products'] as $key => $order_offer) {
             $ordersProduct[] =  $order_offer['product_id'];
@@ -368,32 +389,7 @@ class HomeController extends Controller
             $html .= '<tr><th>Shopify Customer Email</th><td>'.$responseArray['shopify_customer_useremail'].'</td></tr>';
             $html .= '<tr><th>Shopify Customer Password</th><td>'.$responseArray['shopify_password'].'</td></tr>';
         }
-        echo $html;        
     }
-
-    public function updatePIDNotRegData(){
-        $getOrderID = ShopifyNotregData::where('pid','=',0)->pluck('order_id');
-        $orderID = [];
-        foreach($getOrderID as $key => $orderid){
-            $orderID[] = $orderid;
-        }
-        $orderId = [
-            'order_id' => $orderID
-        ];
-        $apiurl = env("STICKY_URL");
-        $key = env("STICKY_API_USERNAME");
-        $pwd = env("STICKY_API_PASSWORD");
-        $ViewOrder = $this->orderView($apiurl, $orderId, $key, $pwd);
-        $oid = '';
-        $data = '';
-        foreach($ViewOrder['data'] as $row){
-            $oid = $row['order_id'];
-            $data = $row['products'][0]['product_id'];
-        }
-        ShopifyNotregData::where('order_id','=',$oid)
-                          ->where('pid','0')
-                          ->update([
-                                'pid' => $data,
-        ]);
+        echo $html;        
     }
 }

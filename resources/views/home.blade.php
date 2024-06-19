@@ -93,8 +93,9 @@ $(".cnfg").click(function (e) {
     data: {"id":id, "_token":"{{csrf_token()}}"},
     dataType: "json",
     success: function (response) {
-        console.log(response);
+        console.log(response.getDashboards.shopify.storeurl);
         $("#modal-xl").show();
+        $(".shopifystoreurl").text(response.getDashboards.shopify.storeurl);
         $(".shopifydomainname").text(response.getDashboards.shopify.shopifydomainname);
         $(".shopifyshopname").text(response.getDashboards.shopify.shopifyshopname);
         $(".mailfrom").text(response.getDashboards.smtp.mailfrom);

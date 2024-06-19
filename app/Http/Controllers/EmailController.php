@@ -12,13 +12,15 @@ use Illuminate\Support\Facades\DB;
 
 class EmailController extends Controller
 {
+    
     public function sendEmail(Request $request){
     $emailTemplate = NULL;
     $isForced = isset($request->isForced) ? $request->isForced : '0';
-    $getShopifyData = CrmOrder::where('id', '=', $request->id)->first();
+    $getShopifyData = CrmOrder::where('id', '=', $request->crmId)->first();
     $getAllData = Dashboard::with('shopify','crm','smtp')->where('id', '=', $getShopifyData->dashboard)->first();
     $shopifywebhookhash = $getAllData->shopify->shopifywebhookhash;
     $ShopifyCustomerRawData = '';
+    global $ShopifyCustomerData;
     $updateMailData = '';
     if($isForced == '0'){
         function verify_webhook($data, $hmac_header)
@@ -31,10 +33,12 @@ class EmailController extends Controller
         $verified = verify_webhook($ShopifyCustomerRawData, $hmac_header);
         $ShopifyCustomerData = json_decode($ShopifyCustomerRawData,true);
     }else{
-        $getOrderById = CrmOrder::where('id', '=', $request->id)->first();
+        $getOrderById = CrmOrder::where('id', '=', $request->crmId)->first();
+        //$getOrderById = ShopifyCustomer::where('id', '=', $request->id)->first();
         if($getOrderById){
-            $dashboardId = $getOrderById->dashboard;
+            $dashboardId = $getShopifyData->dashboard;
             $ShopifyCustomerData = $getOrderById->emailAddress;
+            //$ShopifyCustomerData = $getOrderById->email_address;
         }
         if($ShopifyCustomerData){
             $getData = DB::table('crm_orders')
@@ -48,7 +52,7 @@ class EmailController extends Controller
                     'shopify_customers.discount_code_id',
                     'shopify_customers.balance',
                     'shopify_customers.mail_status',
-            )->where('crm_orders.id', $request->id)->first();
+            )->where('crm_orders.id', $request->crmId)->first();
             $CheckCustomer = $getData->mail_status;
             $customerEmail = $getData->email_address;
             $customerPassword = $getData->password;
@@ -57,10 +61,10 @@ class EmailController extends Controller
             if($CheckCustomer == "Not Sent" || $isForced == '1'){
                     $smtpType = $getAllData->smtp->type;
                     $fromName = $getAllData->smtp->name;
-                    $fromEmail = $getAllData->smtp->mailfrom;
+                    $fromEmail = $getAllData->smtp->email;
                     $mailgunApi = $getAllData->smtp->api;
                     $domain = $getAllData->smtp->domain;
-                if($smtpType == "mailgun"){                  
+                if($smtpType == "mailgun" || $smtpType == "MAILGUN"){
                     if($getAllData->id == '1'){
                         //cuttingedgegizmo
                         $emailTemplate = "email_template.cuttingedgegizmos.email";
@@ -86,25 +90,32 @@ class EmailController extends Controller
                     try {
                         $mgClient = Mailgun::create($mailgunApi);
                         $result = $mgClient->messages()->send($domain, $params);
-                        if($isForced == '0'){
-                            $updateMailData = $ShopifyCustomerRawData;
-                        }
                         $CheckShopifyCustomer = ShopifyCustomer::where('id', $getData->shopify_customers_id)->first();
                         if($CheckShopifyCustomer){
-                            $saveCustomer = ShopifyCustomer::where('id', $getData->shopify_customers_id)->update([
-                                'webhook_response' => json_encode($updateMailData,true),
-                                'mail_status' => 'Sent'
-                            ]);
-                            if($saveCustomer){
+                            global $webhookResponse;
+                            if($isForced == '0'){
+                                $webhookResponse = $ShopifyCustomerRawData;
+                            }else{
+                                $webhookResponse = $result;
+                            }
+                            // $saveCustomer = ShopifyCustomer::where('id', $getData->shopify_customers_id)->update([
+                            //     'webhook_response' => $webhookResponse,
+                            //     'mail_status' => 'Sent',
+                            // ]);
+                            // if($saveCustomer){
                                 return response()->json(
                                     [
                                         'msg' => "Mail Sent Successfully"
                                     ]
                                 );
-                            }
+                            // }
                         }
                     } catch (Exception $e) {
-                        dd($e->getMessage());
+                        return response()->json(
+                            [
+                                'msg' => $e->getMessage()
+                            ]
+                        );
                         if($isForced == '0'){
                             $updateMailData = $ShopifyCustomerRawData;
                         }
@@ -125,6 +136,12 @@ class EmailController extends Controller
                     }
                 }
             }
+        }else{
+            return response()->json(
+                [
+                    'msg' => "Something went wrong!"
+                ]
+            );
         }
     }
 

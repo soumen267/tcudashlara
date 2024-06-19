@@ -62,6 +62,10 @@
             -moz-box-shadow: -1px 8px 14px 4px rgba(0,0,0,0.58);
             box-shadow: -1px 8px 14px 4px rgba(0,0,0,0.58);
         }
+        .selected{
+            color: white;
+            background: lightsteelblue;border-radius: 17px;font-weight:bold;margin-bottom:5px!important;
+        }
         .buttons-copy{
             background-color: #04AA6D!important;
             color: #ffffff!important;
@@ -82,10 +86,10 @@
             background-color: #555555!important;
             color: #ffffff!important;
         }
-        .actives{
+        /* .actives{
             background-color:#000000;
             color:#ddd;
-        }
+        } */
         .main-footer{
             margin-left: 0px; position:absolute;
             bottom:0;
@@ -100,12 +104,16 @@
             display:inline!important;
             padding: 10px!important;
         }
+        .dataTable th {
+            background: lightblue;
+            padding: 3px;
+        }
         </style>
     @stack('style_src')
 </head>
 <body>
 <div id="app">
-        <div id="loading" style="display: none"></div>
+        <div id="loading" style="display: none; z-index:1056"></div>
         <div class="wrapper">
             
             @if (Auth::user()->name === 'superadmin')

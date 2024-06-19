@@ -7,24 +7,24 @@
           <form class="d-inline-flex searchFrm" action="" method="get">
             <div class="form-group" style="margin: 6px;">
               <label for="name" class="">Status:</label>
-              <a href="{{ url("dashboard", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-primary mr-3 mb-2 success">Success</a>
-              <a href="{{ url("dashboard/failed", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-danger mr-3 mb-2 failed">Failed</a>
+              <a href="{{ url("dashboard", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-primary mr-3 mb-2 success"><i class="fa fa-check"></i> Success</a>
+              <a href="{{ url("dashboard/failed", \Helper::getIdfromUrl()) }}" type="button" class="btn btn-danger mr-3 mb-2 failed"><i class="fa fa-exclamation"></i> Failed</a>
             </div>
             <div class="form-group mt-1">
               <label for="date" class="sr-only">date</label>
               <input type="text" class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
             </div>
             <div class="form-group mt-1">
-            <button value="Search" class="btn btn-primary mr-3 mb-2 filter" type="buttton" style="display: inline;margin-left: 7px;">Search</button>
-            <button class="btn btn-danger mr-3 mb-2" id="reset" type="button" style="margin-left: 2px;">Reset</button>
+            <button value="Search" class="btn btn-primary mr-3 mb-2 filter" type="buttton" style="display: inline;margin-left: 7px;"><i class="fa fa-search" aria-hidden="true"></i> Search</button>
+            <button class="btn btn-danger mr-3 mb-2" id="reset" type="button" style="margin-left: 2px;"><i class="fa fa-refresh" aria-hidden="true"></i> Reset</button>
             </div>
             <!-- <a href="error_data.php"  id="reset" class="btn btn-info mr-3 mb-2" >Failed Data</a> -->
           </form>
         </div>
         <div class="col-lg-4">
-            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="0">Add Customer</button>
+            <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="0"><i class="fa fa-plus" aria-hidden="true"></i> Add Customer</button>
             <button class="btn btn-danger customerAdd" type="button" data-dashid="{{ \Helper::getIdfromUrl() }}" data-val="1">Credit Customer</button>
-            <a href="javascript:void(0)" class="btn btn-info mx-2" role="button" data-id="{{ \Helper::getIdfromUrl() }}">Config Details</a>
+            <a href="javascript:void(0)" class="btn btn-info mx-1 config-details" role="button" data-id="{{ \Helper::getIdfromUrl() }}"><i class="fa fa-info-circle" aria-hidden="true"></i> Config Details</a>
         </div>
       </div>
       <div class="table-responsive">
@@ -76,7 +76,7 @@ $(document).ready(function () {
   $('.success').trigger('click');
   $('.success').addClass('actives');
 });
-$(".mx-2").click(function (e) {
+$(".config-details").click(function (e) {
   e.preventDefault();
   var id = $(this).data("id");
   $.ajax({
@@ -88,12 +88,13 @@ $(".mx-2").click(function (e) {
     success: function (response) {
         console.log(response);
         $("#modal-xl").show();
+        $(".shopifystoreurl").text(response.getDashboards.shopify.storeurl);
         $(".shopifydomainname").text(response.getDashboards.shopify.shopifydomainname);
         $(".shopifyshopname").text(response.getDashboards.shopify.shopifyshopname);
-        $(".mailfrom").text(response.getDashboards.smtp.mailfrom);
-        $(".username").text(response.getDashboards.smtp.username);
+        $(".username").text(response.getDashboards.smtp.mailfrom);
+        $(".mailfrom").text(response.getDashboards.smtp.email);
         $(".apiendpoint").text(response.getDashboards.crm.apiendpoint);
-        $(".domain").text(response.getDashboards.smtp.domain);
+        $(".domain").text(response.getDashboards.smtp.type);
         $(".storeurl").val(response.getDashboards.shopify.storeurl);
         $(".product").text(response.getAllowedProduct);
     },
@@ -122,11 +123,13 @@ $("#reset").click(function(e){
 $("body").on("click",".sendmail", function(e){
   e.preventDefault();
   var id = $(this).data("id");
+  var crmId = $(this).data("crmid");
   $.ajax({
     type: "POST",
     url: "{{ route('sendEmail') }}",
     data: {
       "id": id,
+      'crmId':crmId,
       "_token":"{{csrf_token()}}",
       "isForced": "1"
     },
@@ -139,6 +142,9 @@ $("body").on("click",".sendmail", function(e){
       $(".resend-msg-body").html('');
       $(".resend-msg-body").html(response.msg);
       $('#liveToast').toast('show');
+    },
+    error:function(jqXHR, exception){
+      console.log(jqXHR.status);
     },
     complete: function() {
       $("#loading").hide()
@@ -160,6 +166,8 @@ function load_data(from_date = '', to_date = '', type = '')
         serverSide: true,
         responsive: true,
         destroy: true,
+        scrollCollapse: true,
+        scrollY: '300px',
         "bSortable": true,
         ajax: {
           url: Id,
@@ -173,7 +181,7 @@ function load_data(from_date = '', to_date = '', type = '')
           //$('#dataTable2 thead tr').remove();
         },
         columns:[
-          {data: 'id', name: 'id', searchable: true, sortable : true},
+          {data: 'id', name: 'shopify_customers.id', searchable: true, sortable : true},
           {data: 'name', name: 'shopify_customers.name', searchable: true, sortable : true},
           {data: 'email_address', name: 'shopify_customers.email_address', searchable: true, sortable : true,
                     render: function (data, type, row, meta) {
@@ -183,7 +191,7 @@ function load_data(from_date = '', to_date = '', type = '')
           {data: 'coupon_code', name: 'shopify_customers.coupon_code', searchable: true, sortable : true},
           {data: 'balance', name: 'shopify_customers.balance', searchable: false, sortable : false},
           {data: 'mail_status', name: 'action'},
-          {data: 'created_at', name: 'created_at'},
+          {data: 'created_at', name: 'shopify_customers.created_at'},
           {data: 'action', name: 'action', searchable: false, sortable : false}
         ],
         language: {
@@ -194,10 +202,48 @@ function load_data(from_date = '', to_date = '', type = '')
         orientation : 'landscape',
         pageSize : 'A0',
         buttons: [
-          'copy', 'csv', 'excel', 'print', { extend: 'pdf',exportOptions: {
-            columns: 'th:not(:last-child)'
-            }
-          }
+          {
+              extend: 'excelHtml5',
+              text: '<i class="fa fa-file-excel-o"></i> Excel',
+              titleAttr: 'Export to Excel',
+              exportOptions: {
+                columns: 'th:not(:last-child)',
+              }
+          },
+          {
+              extend: 'csvHtml5',
+              text: '<i class="fa fa-file-text-o"></i> CSV',
+              titleAttr: 'CSV',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+              }
+          },
+          {
+              extend: 'pdfHtml5',
+              text: '<i class="fa fa-file-pdf-o"></i> PDF',
+              titleAttr: 'PDF',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+                  orientation: 'landscape',
+                  pageSize: 'LEGAL'
+              },
+          },
+          {
+              extend: 'copy',
+              text: '<i class="fa fa-file-pdf-o"></i> Copy',
+              titleAttr: 'Copy',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+              },
+          },
+          {
+              extend: 'print',
+              text: '<i class="fa fa-file-pdf-o"></i> Print',
+              titleAttr: 'Print',
+              exportOptions: {
+                  columns: 'th:not(:last-child)',
+              },
+          },
         ],
         "pagingType": "full_numbers",        
     });
@@ -206,11 +252,13 @@ function load_data(from_date = '', to_date = '', type = '')
 $("body").on("click",".edit-details", function(e){
   e.preventDefault();
   var id = $(this).data("id");
+  var dashID = $(this).data("dashid");
   $.ajax({
     type: "POST",
     url: "getdata",
     data: {
       "id": id,
+      "dashID": dashID,
       "_token":"{{csrf_token()}}"
     },
     dataType: "json",
@@ -219,6 +267,7 @@ $("body").on("click",".edit-details", function(e){
       $(".update-id").val(id);
       var name = response.name;
       const myArray = name.split(" ");
+      $(".dashboard").val(dashID);
       $(".update-fname").val(myArray[0]);
       $(".update-lname").val(myArray[1]);
       $(".update-email").val(response.email_address);
@@ -254,7 +303,7 @@ $(document).on("click", ".updChanges", function(){
         $(".update-data-msg").css({'color':'green','font-weight': 'bold'});
         setTimeout(() => {
           $("#upd-modal").hide();
-          $('#dataTable').DataTable().ajax.reload();
+          $('#dataTable1').DataTable().ajax.reload();
           $("#loading").hide();
           Swal.fire({
               icon: 'success',
@@ -276,7 +325,7 @@ $(document).on("click", ".updChanges", function(){
   });
 })
 
-$(".mx-2").click(function (e) { 
+$(".config-details").click(function (e) { 
   e.preventDefault();
   $("#modal-xl").show();
 });
@@ -289,17 +338,29 @@ $(".updClose").click(function(){
 $(".createClose").click(function(){
   $("#create-modal").hide();
 })
+$(".updClose").click(function(){
+  $("#create-modal").hide();
+})
+
 
 
 $.urlParam = function (name) {
     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.search);
     return (results !== null) ? results[1] || 0 : false;
 }
-$(".customerAdd").click(function (e) { 
+$(".customerAdd").click(function (e) {
   e.preventDefault();
   $("#create-modal").show();
+  $(".error-msg").hide();
+  $(".modal-body1").hide();
+  $(".orderID").val('');
   $("#dashid").val($(this).data("dashid"));
   $("#credit").val($(this).data("val"));
+  if($(this).data("val") == 1){
+    $(".heading").text("Credit Customer")
+  }else{
+    $(".heading").text("Add Customer")
+  }
 });
 $(document).on("click","#search",function(){
   $(".error-msg").hide();
@@ -317,7 +378,8 @@ $(document).on("click","#search",function(){
                         beforeSend: function(data){
                           $("#loading").show();
                         },
-                        success: function (data) { 
+                        success: function (data) {
+                            $(".modal-body1").show();
                             $("#search_results").html("");
                             $("#search_results").html(data);
                             // $("#creatediv").hide();
