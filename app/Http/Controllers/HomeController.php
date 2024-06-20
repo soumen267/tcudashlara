@@ -283,7 +283,7 @@ class HomeController extends Controller
             $ordersProduct[] =  $order_offer['product_id'];
         }
         $getProducts = Product::where('dashboard_id','=',$request->dashid)->get()->pluck('products')->toArray();
-        if($request->credit == '0'){
+        if($request->credit == '1'){
         $CheckAllowedProduct = array_intersect($ordersProduct,$getProducts);
             // dd($CheckAllowedProduct);
             if (sizeof($CheckAllowedProduct) > 0) {

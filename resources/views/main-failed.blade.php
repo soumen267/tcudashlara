@@ -82,8 +82,8 @@ $(".config-details1").click(function (e) {
         $(".shopifystoreurl").text(response.getDashboards.shopify.storeurl);
         $(".shopifydomainname").text(response.getDashboards.shopify.shopifydomainname);
         $(".shopifyshopname").text(response.getDashboards.shopify.shopifyshopname);
+        $(".username").text(response.getDashboards.smtp.email);
         $(".mailfrom").text(response.getDashboards.smtp.mailfrom);
-        $(".username").text(response.getDashboards.smtp.username);
         $(".apiendpoint").text(response.getDashboards.crm.apiendpoint);
         $(".domain").text(response.getDashboards.smtp.domain);
         $(".storeurl").val(response.getDashboards.shopify.storeurl);
