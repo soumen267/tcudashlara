@@ -1,11 +1,19 @@
 @extends('layouts.app')
 @section('content')
     <div class="container">
+      @if (session('success'))
+      <div class="alert alert-success">
+        {{ session('success') }}
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      @endif
         <div class="row mt-3">
             <div class="col-lg-10">
               <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="{{ route('home') }}">Back</a></li>
-                <li class="breadcrumb-item active">CRM</li>
+                {{-- <li class="breadcrumb-item"><a href="{{ route('home') }}">Back</a></li> --}}
+                <li class="breadcrumb-item active">Dashboard</li>
               </ol>
             </div>
           <div class="col-lg-2">

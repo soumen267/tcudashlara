@@ -148,4 +148,24 @@ class EmailController extends Controller
             
         
     }
+
+    public function webhookTest(){
+        function verify_webhook1($data, $hmac_header)
+        {
+        $calculated_hmac = base64_encode(hash_hmac('sha256', $data, "6e096d4c43b64c06579ca479dd43d039d0e220edfbf204ba23537809b97971ad", true));
+        return hash_equals($hmac_header, $calculated_hmac);
+        }
+        $hmac_header = $_SERVER['HTTP_X_SHOPIFY_HMAC_SHA256'];
+        $ShopifyCustomerRawData = file_get_contents('php://input');
+        $verified = verify_webhook1($ShopifyCustomerRawData, $hmac_header);
+        $ShopifyCustomerData = json_decode($ShopifyCustomerRawData,true);
+
+        if (!$verified) {
+            http_response_code(401);
+            exit;
+        } else {
+         $orderarray = json_decode($ShopifyCustomerRawData, TRUE);
+          dd($orderarray);
+        }
+    }
 }

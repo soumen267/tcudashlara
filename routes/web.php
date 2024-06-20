@@ -1,10 +1,12 @@
 <?php
 
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CrmController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\SmtpController;
+use App\Http\Controllers\UserController;
 use App\Http\Controllers\ShopifyController;
 use App\Http\Controllers\DashboardController;
 
@@ -48,8 +50,10 @@ Route::controller(DashboardController::class)->group(function(){
 });
 Route::any('/send-email', [App\Http\Controllers\EmailController::class, 'sendEmail'])->name('sendEmail');
 
-// Route::post('/webhook', 'WebHookController@index');
+Route::any('/testwebhook', [App\Http\Controllers\EmailController::class, 'webhookTest'])->name('testwebhook');
 
+// Route::post('/webhook', 'WebHookController@index');
+Route::resource('users', UserController::class);
 Route::resource('crm', CrmController::class);
 Route::any('crm/{id}/{status}', [App\Http\Controllers\CrmController::class, 'changeStatus'])->name('crm.status');
 Route::resource('smtp', SmtpController::class);

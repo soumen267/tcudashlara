@@ -8,7 +8,7 @@
 <div class="row mt-3">
   <div class="col-lg-10">
     <ol class="breadcrumb float-sm-right">
-      <li class="breadcrumb-item"><a href="{{ route('home') }}">Back</a></li>
+      <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Back</a></li>
       <li class="breadcrumb-item active">CRM</li>
     </ol>
   </div>

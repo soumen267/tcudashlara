@@ -31,13 +31,6 @@
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputEmail1">HOST <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error ('host') is-invalid @enderror" id="host" name="host" placeholder="HOST" value="{{ $editSMTP['host'] }}">
-                    @error('host')
-                    <p class="error">{{ $message }}</p>
-                    @enderror
-                    </div>
-                    <div class="form-group">
                         <label for="exampleInputEmail1">Domain <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('domain') is-invalid @enderror" id="domain" name="domain" placeholder="Domain" value="{{ $editSMTP['domain'] }}">
                     @error('domain')
@@ -45,37 +38,30 @@
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputEmail1">Port <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error ('port') is-invalid @enderror" id="port" name="port" placeholder="Port" value="{{ $editSMTP['port'] }}">
-                    @error('port')
+                        <label for="exampleInputEmail1">From Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('fromname') is-invalid @enderror" id="fromname" name="fromname" placeholder="From Name" value="{{ $editSMTP['fromname'] }}">
+                    @error('fromname')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputEmail1">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control @error ('email') is-invalid @enderror" id="email" name="email" placeholder="Email" value="{{ $editSMTP['email'] }}">
-                    @error('email')
-                    <p class="error">{{ $message }}</p>
-                    @enderror
-                    </div>
-                    <div class="form-group">
-                        <label for="exampleInputEmail1">Mail From <span class="text-danger">*</span></label>
+                        <label for="exampleInputEmail1">From Email ID <span class="text-danger">*</span></label>
                         <input type="email" class="form-control @error ('mailfrom') is-invalid @enderror" id="mailfrom" name="mailfrom" placeholder="Mail From" value="{{ $editSMTP['mailfrom'] }}">
                     @error('mailfrom')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputEmail1">Username <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error ('username') is-invalid @enderror" id="username" name="username" placeholder="Username" value="{{ $editSMTP['username'] }}">
-                    @error('username')
+                        <label for="exampleInputEmail1">Api Key <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('api') is-invalid @enderror" id="api" name="api" placeholder="Api Key" value="{{ $editSMTP['api'] }}">
+                    @error('api')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputPassword1">Password <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control @error ('password') is-invalid @enderror" id="password" name="password" placeholder="Password" value="{{ $editSMTP['password'] }}">
-                    @error('password')
+                        <label for="exampleInputPassword1">SMTP Type <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('type') is-invalid @enderror" id="type" name="type" placeholder="SMTP Type" value="{{ $editSMTP['type'] }}">
+                    @error('type')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>

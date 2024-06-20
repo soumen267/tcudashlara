@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Shopify;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ShopifyController extends Controller
 {
@@ -12,6 +13,9 @@ class ShopifyController extends Controller
      */
     public function index()
     {
+        if (!Auth::user()) {
+            abort(403, 'Unauthorized access');
+        }
         $getShopifyData = Shopify::all();
         return view('shopify.index',compact('getShopifyData'));
     }
@@ -34,7 +38,8 @@ class ShopifyController extends Controller
             'shopifyapipassword' => 'required',
             'shopifyshopname' => 'required',
             'shopifydomainname' => 'required',
-            'storeurl' => 'required'
+            'storeurl' => 'required',
+            'shopifywebhookhash'=> 'required'
         ]);
         $saveShopifyData = new Shopify();
         $saveShopifyData->shopifyapikey = $request->shopifyapikey;
@@ -42,6 +47,7 @@ class ShopifyController extends Controller
         $saveShopifyData->shopifyshopname = $request->shopifyshopname;
         $saveShopifyData->shopifydomainname = $request->shopifydomainname;
         $saveShopifyData->storeurl = $request->storeurl;
+        $saveShopifyData->shopifywebhookhash = $request->shopifywebhookhash;
         if($saveShopifyData){
             $saveShopifyData->save();
             return redirect()->route('shopify.index')->with('success', 'Shopify Data added successfully!');
@@ -77,7 +83,8 @@ class ShopifyController extends Controller
             'shopifyapipassword' => 'required',
             'shopifyshopname' => 'required',
             'shopifydomainname' => 'required',
-            'storeurl' => 'required'
+            'storeurl' => 'required',
+            'shopifywebhookhash'=> 'required'
         ]);
         $saveShopifyData = Shopify::findOrFail($shopify->id);
         $saveShopifyData->shopifyapikey = $request->shopifyapikey;
@@ -85,6 +92,7 @@ class ShopifyController extends Controller
         $saveShopifyData->shopifyshopname = $request->shopifyshopname;
         $saveShopifyData->shopifydomainname = $request->shopifydomainname;
         $saveShopifyData->storeurl = $request->storeurl;
+        $saveShopifyData->shopifywebhookhash = $request->shopifywebhookhash;
         if($saveShopifyData){
             $saveShopifyData->update();
             return redirect()->route('shopify.index')->with('success', 'Shopify Data added successfully!');

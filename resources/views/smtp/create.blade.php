@@ -30,13 +30,6 @@
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    {{-- <div class="form-group">
-                        <label for="exampleInputEmail1">HOST <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error ('host') is-invalid @enderror" id="host" name="host" placeholder="HOST" value="{{ old('host') }}">
-                    @error('host')
-                    <p class="error">{{ $message }}</p>
-                    @enderror
-                    </div> --}}
                     <div class="form-group">
                         <label for="exampleInputEmail1">Domain <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('domain') is-invalid @enderror" id="domain" name="domain" placeholder="Domain" value="{{ old('domain') }}">
@@ -44,41 +37,34 @@
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    {{-- <div class="form-group">
-                        <label for="exampleInputEmail1">Port <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error ('port') is-invalid @enderror" id="port" name="port" placeholder="Port" value="{{ old('port') }}">
-                    @error('port')
-                    <p class="error">{{ $message }}</p>
-                    @enderror
-                    </div> --}}
                     <div class="form-group">
-                        <label for="exampleInputEmail1">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control @error ('email') is-invalid @enderror" id="email" name="email" placeholder="Email" value="{{ old('email') }}">
-                    @error('email')
+                        <label for="exampleInputEmail1">From Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('fromname') is-invalid @enderror" id="fromname" name="fromname" placeholder="From Name" value="{{ old('fromname') }}">
+                    @error('fromname')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputEmail1">Mail From <span class="text-danger">*</span></label>
+                        <label for="exampleInputEmail1">From Email ID <span class="text-danger">*</span></label>
                         <input type="email" class="form-control @error ('mailfrom') is-invalid @enderror" id="mailfrom" name="mailfrom" placeholder="Mail From" value="{{ old('mailfrom') }}">
                     @error('mailfrom')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    {{-- <div class="form-group">
-                        <label for="exampleInputEmail1">Username <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control @error ('username') is-invalid @enderror" id="username" name="username" placeholder="Username" value="{{ old('username') }}">
-                    @error('username')
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">Api Key <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('api') is-invalid @enderror" id="api" name="api" placeholder="Api Key" value="{{ old('api') }}">
+                    @error('api')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
                     <div class="form-group">
-                        <label for="exampleInputPassword1">Password <span class="text-danger">*</span></label>
-                        <input type="password" class="form-control @error ('password') is-invalid @enderror" id="password" name="password" placeholder="Password" value="{{ old('password') }}">
-                    @error('password')
+                        <label for="exampleInputEmail1">SMTP TYPE <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('type') is-invalid @enderror" id="type" name="type" placeholder="SMTP TYPE" value="{{ old('type') }}">
+                    @error('type')
                     <p class="error">{{ $message }}</p>
                     @enderror
-                    </div> --}}
+                    </div>
                     <div class="form-group">
                         <label for="exampleInputPassword1">Email Template <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('emailtemplatepath') is-invalid @enderror" id="emailtemplatepath" name="emailtemplatepath" placeholder="Email Template" value="{{ old('emailtemplatepath') }}">

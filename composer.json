@@ -15,6 +15,8 @@
         "laravel/ui": "^4.5",
         "mailgun/mailgun-php": "^4.2",
         "phpclassic/php-shopify": "^1.2",
+        "symfony/http-client": "^6.4",
+        "symfony/mailgun-mailer": "^6.4",
         "yajra/laravel-datatables": "^10.0"
     },
     "require-dev": {

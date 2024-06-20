@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Crm;
 use App\Models\Smtp;
+use App\Helpers\helper;
 use App\Models\Product;
 use App\Models\Shopify;
 use App\Models\CrmOrder;
@@ -15,13 +16,14 @@ use Illuminate\Http\Request;
 use App\Models\ShopifyCustomer;
 use App\Models\ShopifyNotregData;
 use Illuminate\Support\Facades\DB;
-use App\Helpers\helper;
+use Illuminate\Support\Facades\Auth;
+
 class DashboardController extends Controller
 {
     use ShopifyTrait, StickyTrait;
     public function accountCreate(Request $request)
     {
-        $couponAmounts = "0";
+        $couponAmounts = 0;
         $dashID = '0';
         $responseArr = [];
         $ordersProduct = [];
@@ -29,6 +31,7 @@ class DashboardController extends Controller
         $response = [];
         $balance = 0;
         $orderId = ($request->order_id ? $request->order_id : '');
+        $saveShopify = [];
         $CheckOrders = CrmOrder::where('orderId', '=', $orderId)->first();
         if ($CheckOrders) {
             echo $html =
@@ -86,7 +89,7 @@ class DashboardController extends Controller
                     ->first();
                     //dd($CheckCustomers->shopifyCustomers);
                     //$CheckCustomer = ShopifyCustomer::where('status', '=', 'Active')->get();
-                    if ($CheckCustomers->shopifyCustomers != '') {
+                    if ($CheckCustomers != null) {
                         $ExistsCustomer = $CheckCustomers->shopifyCustomers;
                         $responseArr["CustomerStatus"] = "Customer already exists";
                         $responseArr["CustomerId"] = $ExistsCustomer["shopify_customer_id"];
@@ -192,8 +195,8 @@ class DashboardController extends Controller
             $storename = $getProd->dashb->shopify['storeurl'];
             $token = $getProd->dashb->shopify['shopifyapipassword'];
             $dashID = $getProd->dashboard_id;
-            if($CheckCustomers == ''){
-                $customerId = $saveShopify->id;
+            if($CheckCustomers == null){
+                $customerId = $saveShopify['id'];
                 $checkLastInsertShopifyCustomers = ShopifyCustomer::where('id', $customerId)->first();
                 $shopifyCustomerID = $customerId;
                 $generateCode = strtoupper(
@@ -201,7 +204,8 @@ class DashboardController extends Controller
                         "CC" .
                         $customerId
                 );
-                $balance = $checkLastInsertShopifyCustomers["balance"];
+                $couponAmounts = round($couponAmounts,0);
+                $balance = $checkLastInsertShopifyCustomers["balance"] ? $checkLastInsertShopifyCustomers["balance"] : 0;
                 $balance = $balance - $couponAmounts;
                 $couponCode = $checkLastInsertShopifyCustomers["coupon_code"] ? $checkLastInsertShopifyCustomers["coupon_code"] : $generateCode;
                 $priceRuleId = $checkLastInsertShopifyCustomers["price_rule_id"] ? $checkLastInsertShopifyCustomers["price_rule_id"] : "";
@@ -327,6 +331,9 @@ class DashboardController extends Controller
     }
 
     public function index(){
+        if (!Auth::user()) {
+            abort(403, 'Unauthorized access');
+        }
         $getDashData = Dashboard::with('crm','shopify','smtp')->where('status','=',1)->get();
         return view('dashboard.index', compact('getDashData'));
     }

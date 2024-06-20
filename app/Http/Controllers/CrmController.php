@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Crm;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class CrmController extends Controller
 {
@@ -12,6 +13,9 @@ class CrmController extends Controller
      */
     public function index()
     {
+        if (!Auth::user()) {
+            abort(403, 'Unauthorized access');
+        }
         $getCRMData = Crm::all();
         return view('crm.index',compact('getCRMData'));
     }

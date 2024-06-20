@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Smtp;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class SmtpController extends Controller
 {
@@ -12,6 +13,9 @@ class SmtpController extends Controller
      */
     public function index()
     {
+        if (!Auth::user()) {
+            abort(403, 'Unauthorized access');
+        }
         $getSMTPData = Smtp::all();
         return view('smtp.index',compact('getSMTPData'));
     }
@@ -31,24 +35,20 @@ class SmtpController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'host' => 'required',
             'domain' => 'required',
-            'port' => 'required',
-            'email' => 'required|email',
+            'fromname' => 'required',
             'mailfrom' => 'required|email',
-            'username' => 'required',
-            'password' => 'required',
+            'api' => 'required',
+            'type' => 'required',
             'emailtemplatepath' => 'required'
         ]);
         $saveSMTPData = new Smtp();
         $saveSMTPData->name = $request->name;
-        $saveSMTPData->host = $request->host;
         $saveSMTPData->domain = $request->domain;
-        $saveSMTPData->port = $request->port;
-        $saveSMTPData->email = $request->email;
+        $saveSMTPData->email = $request->fromname;
         $saveSMTPData->mailfrom = $request->mailfrom;
-        $saveSMTPData->username = $request->username;
-        $saveSMTPData->password = $request->password;
+        $saveSMTPData->api = $request->api;
+        $saveSMTPData->type = $request->type;
         $saveSMTPData->emailtemplatepath = $request->emailtemplatepath;
         if($saveSMTPData){
             $saveSMTPData->save();
@@ -82,27 +82,23 @@ class SmtpController extends Controller
     {
         $request->validate([
             'name' => 'required',
-            'host' => 'required',
             'domain' => 'required',
-            'port' => 'required',
-            'email' => 'required|email',
+            'fromname' => 'required',
             'mailfrom' => 'required|email',
-            'username' => 'required',
-            'password' => 'required',
-            'emailtemplatepath' => 'required'         
+            'api' => 'required',
+            'type' => 'required',
+            'emailtemplatepath' => 'required'      
         ]);
-        $saveSMTPData = Smtp::findOrFail($smtp->id);
-        $saveSMTPData->name = $request->name;
-        $saveSMTPData->host = $request->host;
-        $saveSMTPData->domain = $request->domain;
-        $saveSMTPData->port = $request->port;
-        $saveSMTPData->email = $request->email;
-        $saveSMTPData->mailfrom = $request->mailfrom;
-        $saveSMTPData->username = $request->username;
-        $saveSMTPData->password = $request->password;
-        $saveSMTPData->emailtemplatepath = $request->emailtemplatepath;
-        if($saveSMTPData){
-            $saveSMTPData->update();
+        $updateSMTPData = Smtp::findOrFail($smtp->id);
+        $updateSMTPData->name = $request->name;
+        $updateSMTPData->domain = $request->domain;
+        $updateSMTPData->email = $request->fromname;
+        $updateSMTPData->mailfrom = $request->mailfrom;
+        $updateSMTPData->api = $request->api;
+        $updateSMTPData->type = $request->type;
+        $updateSMTPData->emailtemplatepath = $request->emailtemplatepath;
+        if($updateSMTPData){
+            $updateSMTPData->update();
             return redirect()->route('smtp.index')->with('success', 'SMTP updated successfully!');
         }else{
             return redirect()->route('smtp.index')->with('error', 'Something went wrong!');

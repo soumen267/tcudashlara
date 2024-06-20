@@ -8,7 +8,7 @@
 <div class="row mt-3">
   <div class="col-lg-10">
     <ol class="breadcrumb float-sm-right">
-      <li class="breadcrumb-item"><a href="{{ route('home') }}">Back</a></li>
+      <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Back</a></li>
       <li class="breadcrumb-item active">SMTP</li>
     </ol>
   </div>
@@ -22,13 +22,9 @@
         <tr>
           <th style="width: 10px">#</th>
           <th>Name</th>
-          <th>HOST</th>
           <th>Domain</th>
-          {{-- <th>Port</th> --}}
-          <th>Email</th>
-          <th>MailFrom</th>
-          {{-- <th>Username</th>
-          <th>Password</th> --}}
+          <th>From Name</th>
+          <th>From Email ID</th>
           <th>Emailtemplatepath</th>
           <th>Status</th>
           <th colspan="2">Last Updated</th>
@@ -40,13 +36,9 @@
         <tr>
           <td>{{ ++$key }}.</td>
           <td>{{ $row['name'] }}</td>
-          <td>{{ $row['host'] }}</td>
           <td>{{ $row['domain'] }}</td>
-          {{-- <td>{{ $row['port'] }}</td> --}}
           <td>{{ $row['email'] }}</td>
           <td>{{ $row['mailfrom'] }}</td>
-          {{-- <td>{{ $row['username'] }}</td>
-          <td>{{ $row['password'] }}</td> --}}
           <td>{{ $row['emailtemplatepath'] }}</td>
           <td>
             @if ($row['status'] == 1)
@@ -90,7 +82,7 @@
         </tr>
         @empty
         <tr>
-            <td colspan="7">No data found</td>
+            <td colspan="9">No data found</td>
         </tr>
         @endforelse
         @endif

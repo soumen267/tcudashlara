@@ -108,6 +108,13 @@
             background: lightblue;
             padding: 3px;
         }
+        .field-icon {
+            float: right;
+            margin-left: -25px;
+            margin-top: -25px;
+            position: relative;
+            z-index: 2;
+        }
         </style>
     @stack('style_src')
 </head>
@@ -115,8 +122,8 @@
 <div id="app">
         <div id="loading" style="display: none; z-index:1056"></div>
         <div class="wrapper">
-            
-            @if (Auth::user()->name === 'superadmin')
+            @if (Auth::user())
+            @if (Auth::user()->role === 'superadmin')
                 @include('layouts.partials.header')
                 {{-- @include('layouts.partials.sidebar') --}}
                 <div class="content-wrapper">
@@ -131,6 +138,14 @@
                 </div>
                 @include('layouts.partials.footer')
             </div>
+            @endif
+            @else
+            @include('layouts.partials.header')
+                {{-- @include('layouts.partials.sidebar') --}}
+                <div class="content-wrapper">
+                    @yield('content')
+                </div>
+            @include('layouts.partials.footer')
             @endif            
         </div>
 </div>

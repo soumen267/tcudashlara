@@ -58,6 +58,13 @@
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
+                    <div class="form-group">
+                        <label for="exampleInputEmail1">WebhookHash <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control @error ('shopifywebhookhash') is-invalid @enderror" id="shopifywebhookhash" name="shopifywebhookhash" placeholder="WebhookHash" value="{{ $editShopify['shopifywebhookhash'] }}">
+                    @error('shopifywebhookhash')
+                    <p class="error">{{ $message }}</p>
+                    @enderror
+                    </div>
                 </div>
                 <!-- /.card-body -->
 
