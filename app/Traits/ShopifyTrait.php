@@ -74,7 +74,7 @@ trait ShopifyTrait {
             return;
         }
         $apiurl = "https://$storename/admin/api/2024-04/price_rules/$priceRuleId.json/";
-        $response = $this->apiCall($data,$apiurl,$token,'POST');
+        $response = $this->apiCall($data,$apiurl,$token,'PUT');
         return $response;
     }
 

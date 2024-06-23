@@ -17,7 +17,7 @@ class Dashboard extends Model
 
     public function shopify()
     {
-        return $this->belongsTo(shopify::class,'shopify_id');
+        return $this->belongsTo(Shopify::class,'shopify_id');
     }
 
     public function crm()
