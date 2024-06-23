@@ -29,6 +29,8 @@ Auth::routes();
 
 Route::controller(HomeController::class)->group(function(){
     Route::get('/home', 'index')->name('home');
+    Route::get('/dashboard/{id}', 'mainData')->name('main');
+    Route::get('/dashboard/failed/{id}', 'failedData');
     Route::post('/dashboard/getdata', 'getData');
     Route::post('/dashboard/getdashdata', 'getDashData')->name('getDashData');
     Route::put('/update', 'customerUpdate')->name('home.update');
@@ -36,8 +38,6 @@ Route::controller(HomeController::class)->group(function(){
     Route::post('searchOrder', 'orderSearch')->name('home.search');
 });
 Route::controller(DashboardController::class)->group(function(){
-    Route::get('/dashboard/{id}', 'mainData')->name('main');
-    Route::get('/dashboard/failed/{id}', 'failedData');
     Route::get('/dashboard', 'index')->name('dashboard.index');
     Route::get('/dashboards/create', 'create')->name('dashboards.create');
     Route::post('/dashboards/store', 'store')->name('dashboards.store');
@@ -60,8 +60,3 @@ Route::resource('smtp', SmtpController::class);
 Route::any('smtp/{id}/{status}', [App\Http\Controllers\SmtpController::class, 'changeStatus'])->name('smtp.status');
 Route::resource('shopify', ShopifyController::class);
 Route::any('shopify/{id}/{status}', [App\Http\Controllers\ShopifyController::class, 'changeStatus'])->name('shopify.status');
-
-Route::get('/create-symlink', function (){
-    symlink(storage_path('/app/public'), public_path('storage'));
-    echo "Symlink Created. Thanks";
-});

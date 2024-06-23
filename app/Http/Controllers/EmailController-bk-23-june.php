@@ -60,28 +60,27 @@ class EmailController extends Controller
             $couponAmount = trim(str_replace('-','',$getData->balance));
             if($CheckCustomer == "Not Sent" || $isForced == '1'){
                     $smtpType = $getAllData->smtp->type;
-                    $fromName = $getAllData->smtp->email;
-                    $fromEmail = $getAllData->smtp->mailfrom;
+                    $fromName = $getAllData->smtp->name;
+                    $fromEmail = $getAllData->smtp->email;
                     $mailgunApi = $getAllData->smtp->api;
                     $domain = $getAllData->smtp->domain;
-                    $emailTemplate = $getAllData->smtp->emailtemplatepath;
                 if($smtpType == "mailgun" || $smtpType == "MAILGUN"){
-                    // if($getAllData->id == '1'){
-                    //     //cuttingedgegizmo
-                    //     $emailTemplate = "email_template.cuttingedgegizmos.email";
-                    // }elseif($getAllData->id == '2'){
-                    //     //imoderntrendsdash
-                    //     $emailTemplate = "email_template.imoderntrendsdash.email";
-                    // }elseif($getAllData->id == '3'){
-                    //     //jovprimewidgetpickdash
-                    //     $emailTemplate = "email_template.jovprimewidgetpickdash.email";
-                    // }elseif($getAllData->id == '4'){
-                    //     //tlhignitegeartech
-                    //     $emailTemplate = "email_template.tlhignitegeartech.email";
-                    // }elseif($getAllData->id == '5'){
-                    //     //egizmotrendsdash
-                    //     $emailTemplate = "email_template.egizmotrendsdash.email-template-3";
-                    // }
+                    if($getAllData->id == '1'){
+                        //cuttingedgegizmo
+                        $emailTemplate = "email_template.cuttingedgegizmos.email";
+                    }elseif($getAllData->id == '2'){
+                        //imoderntrendsdash
+                        $emailTemplate = "email_template.imoderntrendsdash.email";
+                    }elseif($getAllData->id == '3'){
+                        //jovprimewidgetpickdash
+                        $emailTemplate = "email_template.jovprimewidgetpickdash.email";
+                    }elseif($getAllData->id == '4'){
+                        //tlhignitegeartech
+                        $emailTemplate = "email_template.tlhignitegeartech.email";
+                    }elseif($getAllData->id == '5'){
+                        //egizmotrendsdash
+                        $emailTemplate = "email_template.egizmotrendsdash.email-template-3";
+                    }
                     $params = [
                         'from'	    => $fromEmail,
                         'to'	    => $getData->email_address,
@@ -150,29 +149,23 @@ class EmailController extends Controller
         
     }
 
-    // public function webhookTest(){
-    //     // $dir = base_path()."/public/test.txt";
-    //     // dd($dir);
-    //     // function verify_webhook1($data, $hmac_header)
-    //     // {
-    //     // $calculated_hmac = base64_encode(hash_hmac('sha256', $data, "61b63c018fc4043e0cdc34260f636e5ee65d01884e2f2b9b5c89d1c61cb7bcad", true));
-    //     // return hash_equals($hmac_header, $calculated_hmac);
-    //     // }
-    //     // $hmac_header = $_SERVER['HTTP_X_SHOPIFY_HMAC_SHA256'];
-    //     $ShopifyCustomerRawData = file_get_contents('php://input');
-    //     $data = [
-    //         "order_id" => '123456'
-    //     ];
-    //     file_put_contents(base_path()."/test.txt", $data,true);
-    //     // $ShopifyCustomerData = json_decode($ShopifyCustomerRawData,true);
-    //     // $verified = verify_webhook1($ShopifyCustomerRawData, $hmac_header);
+    public function webhookTest(){
+        function verify_webhook1($data, $hmac_header)
+        {
+        $calculated_hmac = base64_encode(hash_hmac('sha256', $data, "6e096d4c43b64c06579ca479dd43d039d0e220edfbf204ba23537809b97971ad", true));
+        return hash_equals($hmac_header, $calculated_hmac);
+        }
+        $hmac_header = $_SERVER['HTTP_X_SHOPIFY_HMAC_SHA256'];
+        $ShopifyCustomerRawData = file_get_contents('php://input');
+        $verified = verify_webhook1($ShopifyCustomerRawData, $hmac_header);
+        $ShopifyCustomerData = json_decode($ShopifyCustomerRawData,true);
 
-    //     // if (!$verified) {
-    //     //     http_response_code(401);
-    //     //     exit;
-    //     // } else {
-    //     //  $orderarray = json_decode($ShopifyCustomerRawData, TRUE);
-    //     //   dd($orderarray);
-    //     // }
-    // }
+        if (!$verified) {
+            http_response_code(401);
+            exit;
+        } else {
+         $orderarray = json_decode($ShopifyCustomerRawData, TRUE);
+          dd($orderarray);
+        }
+    }
 }
