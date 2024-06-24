@@ -36,6 +36,21 @@ class DashboardController extends Controller
         $balance = 0;
         $orderId = ($request->order_id ? $request->order_id : '');
         $saveShopify = [];
+        $sticky1 = Crm::where('status', '=', '1')->first();
+            $apiurl1 = $sticky1->apiendpoint . "/api/v1/order_view";
+            $DataQuery1 = [
+                'order_id' => $orderId,
+        ];
+        $response2 = $this->orderView($apiurl1, $DataQuery1, $sticky1->apiusername, $sticky1->apipassword);
+        DB::table('request_check')->insert(
+            [
+            'order_id' => $orderId,
+            'email' => $response2["email_address"],
+            'api_response' => json_encode($response2,true),
+            'created_at' => Carbon::now()->toDateTimeString(),
+            'updated_at' => Carbon::now()->toDateTimeString()
+            ]
+        );
         $CheckOrders = CrmOrder::where('orderId', '=', $orderId)->first();
         if ($CheckOrders) {
             echo $html =

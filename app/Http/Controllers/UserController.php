@@ -44,7 +44,6 @@ class UserController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'role' => 'required',
         ]);
-        dd($request->all());
         $saveUser = new User();
         $saveUser->name = $request->name;
         $saveUser->email = $request->email;
