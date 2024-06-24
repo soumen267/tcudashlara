@@ -19,7 +19,6 @@ class Helper
         $ProductPriceArr = [];
         // $getData = DB::table('raw_shopify_customers')->get();
         // $getcal = json_decode($getData->crm_response, true);
-        
             foreach ($data['products'] as $key => $order_offer) {
                 $ordersProduct[] = $order_offer["product_id"];
                 $ProductPriceArr[$order_offer["product_id"]] = $order_offer["price"];
@@ -99,7 +98,7 @@ class Helper
     }
 
     public static function getIdfromUrl(){
-        $mylink = $_SERVER['PHP_SELF'];
+        $mylink = $_SERVER['REQUEST_URI'];
         $link_array = explode('/',$mylink);
         $lastpart = end($link_array);
         

@@ -15,7 +15,9 @@ trait EmailTrait {
 
         $getAllData = Dashboard::with('shopify','crm','smtp')->where('id', '=', $dashID)->first();
         $ShopifyCustomerRawData = '';
-        $getData = ShopifyCustomer::where('id', $shopifyCustomerID)->first();
+        $getData = ShopifyCustomer::where('id', $shopifyCustomerID)
+                   ->whereNotNull(['email_address','password','discount_code_id','balance'])
+                   ->first();
         if($getData){
             $CheckCustomer = $getData->mail_status;
             $customerEmail = $getData->email_address;
@@ -38,37 +40,33 @@ trait EmailTrait {
                 try {
                     $mgClient = Mailgun::create($mailgunApi);
                     $result = $mgClient->messages()->send($domain, $params);
-                    $CheckShopifyCustomer = ShopifyCustomer::where('id', $getData->shopify_customers_id)->first();
-                    if($CheckShopifyCustomer){
-                        global $webhookResponse;
-                        $webhookResponse = $result;
-                        return response()->json(
-                            [
-                                'msg' => "Mail Sent Successfully"
-                            ]
-                        );
-                    }
-                } catch (Exception $e) {
-                    return response()->json(
-                        [
-                            'msg' => $e->getMessage()
-                        ]
-                    );
-                    
-                    $CheckShopifyCustomer = ShopifyCustomer::where('id', $getData->shopify_customers_id)->first();
-                    if($CheckShopifyCustomer){
-                        $saveCustomer = ShopifyCustomer::where('id', $getData->shopify_customers_id)->update([
-                            'webhook_response' => json_encode($webhookResponse,true),
-                            'mail_status' => 'sent'
-                        ]);
-                        if($saveCustomer){
+                    if($result->getstatusCode() == 200){
+                        $mailStatus = [
+                            "id" => $result->getId(),
+                            "msg" => $result->getMessage(),
+                            'status' => $result->getStatusCode()
+                        ];
+                        $CheckShopifyCustomer = ShopifyCustomer::where('id', $getData->id)->first();
+                        if($CheckShopifyCustomer){
+                            $webhookResponse = $result;
+                            $saveCustomer = ShopifyCustomer::where('id', $getData->id)->update([
+                                'mail_response' => json_encode($mailStatus,true),
+                                'mail_status' => 'Sent'
+                            ]);
                             return response()->json(
                                 [
-                                    'msg' => "We Are Unable To Send The Mail. Try Again."
+                                    'msg' => "Mail Sent Successfully"
                                 ]
                             );
                         }
                     }
+                } catch (Exception $e) {
+                    return response()->json(
+                        [
+                            'msg' => $e->getMessage(),
+                            'msg1' => "We Are Unable To Send The Mail. Try Again."
+                        ]
+                    );
                 }
             }
         }else{

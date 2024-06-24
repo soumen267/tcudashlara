@@ -400,15 +400,23 @@ $(document).on("click",".create_customer",function(){
                 $(this).hide();
                 $("#create_results").html("");
                 if(orderid != ""){
+                var coupon_val = $("#coupon_val").val();
                     $.ajax({
                         url: '{{ route("dashboard.create-account") }}',
                         method: 'post',
-                        data: {order_id:orderid,return_type:'html',"_token":"{{csrf_token()}}"},
+                        data: {order_id:orderid,coupon_val:coupon_val,return_type:'html',"_token":"{{csrf_token()}}"},
+                        beforeSend: function(data){
+                          $("#loading").show();
+                        },
                         success: function (data) { 
                             console.log(data);
+                            $("#search_results").html("");
                             $("#create_results").html("");
                             $("#create_results").html(data);
                             $('#dataTable').DataTable().ajax.reload();
+                        },
+                        complete: function(data){
+                          $("#loading").hide();
                         }
                     });
                 }

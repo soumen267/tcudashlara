@@ -10,8 +10,8 @@ use App\Models\Product;
 use App\Models\Shopify;
 use App\Models\CrmOrder;
 use App\Models\Dashboard;
-use App\Traits\StickyTrait;
 use App\Traits\EmailTrait;
+use App\Traits\StickyTrait;
 use Illuminate\Support\Str;
 use App\Traits\ShopifyTrait;
 use Illuminate\Http\Request;
@@ -24,7 +24,7 @@ use Illuminate\Support\Facades\Config;
 
 class DashboardController extends Controller
 {
-    use ShopifyTrait, StickyTrait;
+    use ShopifyTrait, StickyTrait, EmailTrait;
     public function accountCreate(Request $request)
     {
         global $couponAmounts;
@@ -73,14 +73,18 @@ class DashboardController extends Controller
                         $TotalAllowedOrderPrice =
                             $TotalAllowedOrderPrice + $ProductPriceArr[$pid];
                     }
-                    $couponAmount = env("COUPON_AMOUNT");
-                    
-                    if (env("COUPON_TYPE") === "PERCENTAGE") {
-                        $couponAmount = round($TotalAllowedOrderPrice * ($couponAmount / 100));
-                    } elseif (env("COUPON_TYPE") === "STATIC") {
-                        $couponAmounts = round($couponAmount);
-                    } else {
-                        $couponAmounts = round($couponAmount);
+                    $couponValue = $request->coupon_val ? $request->coupon_val : '';
+                    if($couponValue != null){
+                        $couponAmounts = $couponValue;
+                    }else{
+                        $couponAmount = env("COUPON_AMOUNT");
+                        if (env("COUPON_TYPE") === "PERCENTAGE") {
+                            $couponAmount = round($TotalAllowedOrderPrice * ($couponAmount / 100));
+                        } elseif (env("COUPON_TYPE") === "STATIC") {
+                            $couponAmounts = round($couponAmount);
+                        } else {
+                            $couponAmounts = round($couponAmount);
+                        }
                     }
                 }
                 //dd($couponAmounts);
@@ -293,7 +297,7 @@ class DashboardController extends Controller
             }
             if($shopifyCustomerID != ''){
                 $sendMail = $this->sendGiftEmail($dashID, $shopifyCustomerID);
-                dd($sendMail);
+                //dd($sendMail);
                 $crmOrders = new CrmOrder();
                 $crmOrders->orderId = $response["order_id"];
                 $crmOrders->shopify_customers_id = $shopifyCustomerID;

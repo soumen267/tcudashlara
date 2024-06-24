@@ -183,19 +183,27 @@ class HomeController extends Controller
             'order_id' => $request->order_id
         ];
         $ViewOrder = $this->orderView1($apiurl, $DataQuery, $key, $pwd);
+        $orderCheck = CrmOrder::where('orderId',$request->order_id)->first();
+        if($ViewOrder["response_code"] == 100){
+            $checkAllowedDashboard = Helper::getDashboardId($ViewOrder);
+        }        
         if($ViewOrder["response_code"] != 100 && $ViewOrder["response_code"] != 350){
             $html = '<tr><td colspan="2">'.$ViewOrder['error_message'].'</td></tr>';
         }else if($ViewOrder["response_code"] == 350){
             $html = 'Invalid Order ID';
+        }else if($orderCheck){
+            $html = 'Order Already Exists';
+        }else if($checkAllowedDashboard['dashId'] != $request->dashid){
+            $html = '<span style="text-align:left">Order not allowed for this dashboard</span>';
         }else{
         $ordersProduct = [];
         foreach ($ViewOrder['products'] as $key => $order_offer) {
             $ordersProduct[] =  $order_offer['product_id'];
         }
         $getProducts = Product::where('dashboard_id','=',$request->dashid)->get()->pluck('products')->toArray();
-        if($request->credit == '1'){
+        if($request->credit == '0'){
         $CheckAllowedProduct = array_intersect($ordersProduct,$getProducts);
-            if (sizeof($CheckAllowedProduct) > 0) {
+            if (sizeof($CheckAllowedProduct) < 1) {
                 $responseArray['creation_msg'] = '<span class="text-success">Order Allowed For Account Creation</span>';
                 $responseArray['creation_status'] = true;
                 $responseArray['emailAddress'] = $ViewOrder['email_address'];
@@ -220,21 +228,21 @@ class HomeController extends Controller
                                             $q->where('email_address', $customerEmail);
                                         })
                                         ->where('dashboard',$request->dashid)
-                                        ->first();
+                           ->first();
         if($CheckCustomer != null){
             // $CheckCustomer = $CheckCustomer[0];
             $responseArray['user_msg'] = '<span class="text-danger">Customer Already Exists In Shopify</span>';
             $responseArray['user_status'] = false;
-            $responseArray['shopify_customer_id'] = $CheckCustomer['shopify_customer_id'];
-            $responseArray['shopify_customer_useremail'] =  $CheckCustomer['email_address'];
-            $responseArray['shopify_password'] =  $CheckCustomer['password'];
-            $responseArray['coupon_code'] =  $CheckCustomer['coupon_code'];
-            $responseArray['balance'] =  $CheckCustomer['balance'];
+            $responseArray['shopify_customer_id'] = $CheckCustomer->shopifyCustomers['shopify_customer_id'];
+            $responseArray['shopify_customer_useremail'] =  $CheckCustomer->shopifyCustomers['email_address'];
+            $responseArray['shopify_password'] =  $CheckCustomer->shopifyCustomers['password'];
+            $responseArray['coupon_code'] =  $CheckCustomer->shopifyCustomers['coupon_code'];
+            $responseArray['balance'] =  $CheckCustomer->shopifyCustomers['balance'];
             
             if($CheckCustomer['crm_response'] == NULL){
-                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer['id'])->first();
+                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->first();
                 if($CheckShopifyCustomer){
-                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->update([
+                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->update([
                         'crm_response' => json_encode($ViewOrder,true),
                     ]);
                 }
@@ -249,6 +257,7 @@ class HomeController extends Controller
             $responseArray['coupon_code'] =  "---";
             $responseArray['balance'] =  "---";
         }
+        
         $html ="";
         $html .= '<tr>
                     <th width="50%">Creation Status</th>
@@ -270,7 +279,8 @@ class HomeController extends Controller
             $html .= '<tr><th>Shopify Customer Email</th><td>'.$responseArray['shopify_customer_useremail'].'</td></tr>';
             $html .= '<tr><th>Shopify Customer Password</th><td>'.$responseArray['shopify_password'].'</td></tr>';
         }
-    }
-        echo $html;        
+        }
+        echo $html;  
+
     }
 }
