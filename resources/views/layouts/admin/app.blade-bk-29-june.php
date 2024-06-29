@@ -33,13 +33,7 @@
     <!--===============================================================================================-->
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    <style>
-    .invalid-feedback{
-        display: block;
-    }
-    </style>
     @stack('style_src')
-  
 </head>
 <body>
     <div id="app">

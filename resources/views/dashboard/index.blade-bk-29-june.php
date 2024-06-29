@@ -10,18 +10,17 @@
       </div>
       @endif
         <div class="row mt-3">
-            <div class="col-6 col-md-6">
+            <div class="col-lg-10">
               <ol class="breadcrumb float-sm-right">
                 {{-- <li class="breadcrumb-item"><a href="{{ route('home') }}">Back</a></li> --}}
                 <li class="breadcrumb-item active">Dashboard</li>
               </ol>
             </div>
-          <div class="col-6 col-md-6 text-end">
-            <a class="btn btn-primary" href="{{ route('dashboards.create') }}">CREATE</a>
+          <div class="col-lg-2">
+            <a class="btn btn-primary" style="width:193px;" href="{{ route('dashboards.create') }}">CREATE</a>
           </div>
           </div>
           <div class="card-body">
-            <div class="responsiveTable">
               <table class="table">
                 <thead>
                   <tr>
@@ -30,7 +29,7 @@
                     <th>CRM</th>
                     <th>SMTP</th>
                     <th>SHOPIFY</th>
-                    <!-- <th>Status</th> -->
+                    <th>Status</th>
                     <th colspan="2">Last Updated</th>
                   </tr>
                 </thead>
@@ -43,13 +42,13 @@
                     <td>{{ $row->crm['providerlabel'] }}</td>
                     <td>{{ $row->shopify['storeurl'] }}</td>
                     <td>{{ $row->smtp['name'] }}</td>
-                    <!-- <td>
+                    <td>
                       @if ($row['status'] == 1)
                       <span class="text-secondary"><strong>Active</strong></span>
                       @elseif($row['status'] == 0)
                       <span class="text-secondary"><strong>Deactive</strong></span>
                       @endif
-                    </td> -->
+                    </td>
                     <td>{{ $row['updated_at'] }}</td>
                     <td>
                       <div id="container">
@@ -60,8 +59,8 @@
                           </div>
                           <div class="menu">
                             <div>
-                              <ul class="menu-items">
-                                <!-- <li><a href="#" class="link" data-id="{{ $row['id'] }}">View</a></li> -->
+                              <ul>
+                                <li><a href="#" class="link" data-id="{{ $row['id'] }}">View</a></li>
                                 <li><a href="{{ route('dashboards.edit', $row['id']) }}" class="link" data-id="{{ $row['id'] }}">Edit</a></li>
                                 {{-- @if ($row['status'] == 1)
                                 <li><a href="{{ route('crm.status', [$row['id'], 0]) }}" class="link" data-id="{{ $row['id'] }}">Deactive</a></li>  
@@ -90,7 +89,6 @@
                   @endif
                 </tbody>
               </table>
-            </div>
             </div>
           </div>
     </div>

@@ -14,29 +14,29 @@
         </div>
         <p class="text-center w-100 update-data-msg" style="display:none;" >Customer Data Updated.</p>
         <div class="modal-body">
-          <div class="container-fluid">
+          <div class="container-fluid my-4">
             <input type="hidden" class="form-control dashboard" name="dashboard">
-            <div class="form-group mb-3">
-              <label class="col-12 col-form-label">First Name:</label>
-              <div class="col-md-12">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">First Name:</label>
+              <div class="col-sm-9">
                 <input type="text" class="form-control update-fname" name="update_fname" required>
               </div>
             </div>
-            <div class="form-group mb-3">
-              <label class="col-12 col-form-label">Last Name:</label>
-              <div class="col-md-12">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Last Name:</label>
+              <div class="col-sm-9">
                 <input type="text" class="form-control update-lname" name="update_lname" required>
               </div>
             </div>
-            <div class="form-group mb-3">
-              <label class="col-12 col-form-label">Email:</label>
-              <div class="col-md-12">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Email:</label>
+              <div class="col-sm-9">
                 <input type="text" class="form-control update-email" name="update_email" required>
               </div>
             </div>
-            <div class="form-group mb-3">
-              <label class="col-12 col-form-label">Phone Number:</label>
-              <div class="col-md-12">
+            <div class="form-group row">
+              <label class="col-sm-3 col-form-label">Phone Number:</label>
+              <div class="col-sm-9">
                 <input type="text" class="form-control update-phone" name="update_phone" required>
               </div>
             </div>

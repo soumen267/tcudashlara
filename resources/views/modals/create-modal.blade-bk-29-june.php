@@ -14,10 +14,10 @@
           <div class="container-fluid my-4">
             <div class="form-group row">
               <label class="col-sm-3 col-form-label">Order Id</label>
-              <div class="col"> 
+              <div class="col-sm-9">
                 <input type="hidden" class="form-control" id="dashid" name="dashid">
                 <input type="hidden" class="form-control" id="credit" name="credit" value="">
-                <input type="text" class="form-control orderID" id="order_id" name="order_id" required placeholder="Order Id" onkeyup="javascript: this.value = this.value.replace(/[^0-9]/g,'');">
+                <input type="text" class="form-control orderID" id="order_id" name="order_id" required placeholder="Order Id">
                 <span class="error-msg" style="display: none"></span>
               </div>
             </div>

@@ -2,8 +2,8 @@
 @section('content')
 <div class="container">
     <div class="content-header">
-        <div class="row">
-                <div class="col-12 mt-2">
+        <div class="container-fluid">
+                <div class="col-sm-6 mt-2">
                     <ol class="breadcrumb float-sm-right">
                         <li class="breadcrumb-item"><a href="{{ route('smtp.index') }}">Back</a></li>
                         <li class="breadcrumb-item active">SMTP</li>
@@ -11,8 +11,7 @@
                 </div>
         </div>
     </div>
-    <div class="row justify-content-center">
-    <div class="col-12 col-md-8">
+    <div class="col-md-12">
         <!-- general form elements -->
         <div class="card card-primary">
             <div class="card-header">
@@ -24,49 +23,49 @@
                 @csrf
                 @method('PUT')
                 <div class="card-body">
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputEmail1">Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('name') is-invalid @enderror" id="name" name="name" placeholder="Name" value="{{ $editSMTP['name'] }}">
                     @error('name')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputEmail1">Domain <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('domain') is-invalid @enderror" id="domain" name="domain" placeholder="Domain" value="{{ $editSMTP['domain'] }}">
                     @error('domain')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputEmail1">From Name <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('fromname') is-invalid @enderror" id="fromname" name="fromname" placeholder="From Name" value="{{ $editSMTP['fromname'] }}">
                     @error('fromname')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputEmail1">From Email ID <span class="text-danger">*</span></label>
                         <input type="email" class="form-control @error ('mailfrom') is-invalid @enderror" id="mailfrom" name="mailfrom" placeholder="Mail From" value="{{ $editSMTP['mailfrom'] }}">
                     @error('mailfrom')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputEmail1">Api Key <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('api') is-invalid @enderror" id="api" name="api" placeholder="Api Key" value="{{ $editSMTP['api'] }}">
                     @error('api')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputPassword1">SMTP Type <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('type') is-invalid @enderror" id="type" name="type" placeholder="SMTP Type" value="{{ $editSMTP['type'] }}">
                     @error('type')
                     <p class="error">{{ $message }}</p>
                     @enderror
                     </div>
-                    <div class="form-group mb-3">
+                    <div class="form-group">
                         <label for="exampleInputPassword1">Email Template <span class="text-danger">*</span></label>
                         <input type="text" class="form-control @error ('emailtemplatepath') is-invalid @enderror" id="emailtemplatepath" name="emailtemplatepath" placeholder="Email Template" value="{{ $editSMTP['emailtemplatepath'] }}">
                     @error('emailtemplatepath')
@@ -83,6 +82,5 @@
         </div>
         <!-- /.card -->
     </div>
-</div>
 </div>
 @endsection
