@@ -8,10 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class SmtpController extends Controller
 {
-    public function __construct()
-    {
-         $this->middleware('auth');
-    }
     /**
      * Display a listing of the resource.
      */
@@ -45,14 +41,6 @@ class SmtpController extends Controller
             'api' => 'required',
             'type' => 'required',
             'emailtemplatepath' => 'required'
-        ],[
-            'name' => 'The SMTP profile name field is required.',
-            'domain' => 'The SMTP domain provider field is required.',
-            'fromname' => 'The SMTP from name field is required.',
-            'mailfrom' => 'The SMTP from email id field is required.',
-            'api' => 'The SMTP provider api key field is required.',
-            'type' => 'The SMTP provider type field is required.',
-            'emailtemplatepath' => 'The email template path field is required.'  
         ]);
         $saveSMTPData = new Smtp();
         $saveSMTPData->name = $request->name;
@@ -100,17 +88,7 @@ class SmtpController extends Controller
             'api' => 'required',
             'type' => 'required',
             'emailtemplatepath' => 'required'      
-        ],
-        [
-            'name' => 'The SMTP profile name field is required.',
-            'domain' => 'The SMTP domain provider field is required.',
-            'fromname' => 'The SMTP from name field is required.',
-            'mailfrom' => 'The SMTP from email id field is required.',
-            'api' => 'The SMTP provider api key field is required.',
-            'type' => 'The SMTP provider type field is required.',
-            'emailtemplatepath' => 'The email template path field is required.'  
-        ]    
-        );
+        ]);
         $updateSMTPData = Smtp::findOrFail($smtp->id);
         $updateSMTPData->name = $request->name;
         $updateSMTPData->domain = $request->domain;

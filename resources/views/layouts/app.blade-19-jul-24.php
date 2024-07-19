@@ -114,9 +114,6 @@
             position: relative;
             z-index: 2;
         }
-        .error{
-            color: red;
-        }
         </style>
     @stack('style_src')
 </head>

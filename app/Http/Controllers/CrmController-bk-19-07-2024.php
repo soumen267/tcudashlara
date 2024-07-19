@@ -8,10 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CrmController extends Controller
 {
-    public function __construct()
-    {
-         $this->middleware('auth');
-    }
     /**
      * Display a listing of the resource.
      */
@@ -43,11 +39,6 @@ class CrmController extends Controller
             'apiusername' => 'required',
             'apipassword' => 'required',
             'crmtype' => 'required',           
-        ],[
-            'providerlabel.required' => 'The Provider field is required.',
-            'apiendpoint.required' => 'The API endpoint field is required.',
-            'apiusername.required' => 'The API username field is required.',
-            'apipassword.required' => 'The API password field is required.',
         ]);
         $saveCRMData = new Crm();
         $saveCRMData->providerlabel = $request->providerlabel;
@@ -91,12 +82,6 @@ class CrmController extends Controller
             'apiusername' => 'required',
             'apipassword' => 'required',
             'crmtype' => 'required',           
-        ],
-        [
-            'providerlabel.required' => 'The Provider field is required.',
-            'apiendpoint.required' => 'The API endpoint field is required.',
-            'apiusername.required' => 'The API username field is required.',
-            'apipassword.required' => 'The API password field is required.',
         ]);
         $saveCRMData = Crm::findOrFail($crm->id);
         $saveCRMData->providerlabel = $request->providerlabel;

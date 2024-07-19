@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Smtp;
 use App\Models\User;
 use Mailgun\Mailgun;
 use Mailgun\Exception;
@@ -12,10 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class UserController extends Controller
 {
-    public function __construct()
-     {
-         $this->middleware('auth');
-     }
     /**
      * Display a listing of the resource.
      */
@@ -58,11 +53,7 @@ class UserController extends Controller
         $userPassword = $request->password;
         $userName = $request->name;
         $emailTemplate = "email_template.welcome-email.create-user";
-        //$saveUser->save();
-        $getSMTPData = Smtp::where('status', '=', 1)->where('name', '=','Prime Widget')->first();
-        $domain = $getSMTPData->domain;
-        $api = $getSMTPData->api;
-        if($userPassword != '' && $userEmail != ''){
+        if($saveUser){
             $params = [
                 'from'	    => "support@cuttingedgegizmos.com",
                 'to'	    => $request->email,
@@ -70,21 +61,19 @@ class UserController extends Controller
                 'html'	    =>  View($emailTemplate, compact('userName','userEmail','userPassword'))->render()
             ];
             try {
-            $mgClient = Mailgun::create($api);
-                $result = $mgClient->messages()->send($domain, $params);
-                
-                return redirect()->route('users.index')->with('success', 'User created successfully');
+                $mgClient = Mailgun::create(env("MAILGUN_API"));
+                $result = $mgClient->messages()->send(env("MAILGUN_DOMAIN"), $params);
+                // $saveUser->save();
+                // return redirect()->route('users.index')->with('success', 'User added successfully!');
             }
             catch (Exception $e) {
-                
-                return redirect()->route('users.index')->with('error', 'Something Went Wrong!');
+                return redirect()->route('users.index')->with('error', $e->getMessage());
             };
             
-        // }else{
-        //     return redirect()->route('users.index')->with('error', 'Something went wrong!');
-        // }
+        }else{
+            return redirect()->route('users.index')->with('error', 'Something went wrong!');
+        }
     }
-}
 
     /**
      * Display the specified resource.
@@ -130,24 +119,8 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(User $user)
+    public function destroy(string $id)
     {
-        
-        $data = User::find($user->id)->delete();
-        if($data){
-            return redirect(route('users.index'))->with('success', 'Users Deleted Successfully');
-        }else{
-            return redirect(route('users.index'))->with('error', 'Something went wrong');
-        }
-        
-    }
-
-    public function changeStatus(Request $request, $id, $status){
-        $changeStat = User::findOrFail($id);
-        if($changeStat){
-            $changeStat->status = $status;
-            $changeStat->update();
-            return redirect()->route('users.index')->with('success', 'Status updated successfully!');
-        }
+        //
     }
 }

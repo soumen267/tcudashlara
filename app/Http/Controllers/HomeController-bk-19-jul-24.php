@@ -162,15 +162,13 @@ class HomeController extends Controller
 
         ],[
 
-            'update_fname.required' => 'First name field is required.',
+            'update_fname.required' => 'Firstname is required!',
 
-            'update_lname.required' => 'Last name field is required.',
+            'update_lname.required' => 'Lastname is required!',
 
-            'update_email.required' => 'Email field is required.',
+            'update_email.required' => 'Email is required!',
 
-            'update_email.email' => 'The email field must be a valid email address.',
-
-            'update_phone.required' => 'Phone no. field is required.',
+            'update_phone.required' => 'Phone is required!',
 
         ]
 
@@ -189,6 +187,7 @@ class HomeController extends Controller
         ]);
 
         }else{
+
         //$CheckCustomer = CrmOrder::with('shopifyCustomers')->where('id', $request->update_id)->first();
 
         $ID = $request->update_id;
@@ -197,24 +196,22 @@ class HomeController extends Controller
 
         $email = $request->update_email;
 
-        $old_email = $request->shopify_email;
-
         //$CheckCustomer = ShopifyCustomer::where('id', $request->update_id)->where('email_address',$request->update_email)->first();
 
         $CheckCustomer = CrmOrder::with(['shopifyCustomers'])
 
-                                    ->whereHas('shopifyCustomers', function($q) use ($ID, $old_email){
+                                    ->whereHas('shopifyCustomers', function($q) use ($ID, $email){
 
                                             $q->where('id', $ID);
 
-                                            $q->where('email_address', $old_email);
+                                            $q->where('email_address', $email);
 
         })
 
         ->where('dashboard',$dashID)
 
         ->first();
-        //dd($CheckCustomer);
+
         $getDatas = Dashboard::with('crm','shopify','smtp')->where('id','=',$dashID)->first();
 
         $storename = $getDatas->shopify['storeurl'];
@@ -226,7 +223,6 @@ class HomeController extends Controller
         // dd($CheckCustomer);
 
         if($CheckCustomer){
-            
 
             // $customerId = $CheckCustomer->shopifyCustomers->shopify_customer_id ? $CheckCustomer->shopifyCustomers->shopify_customer_id : "";
 
@@ -336,15 +332,7 @@ class HomeController extends Controller
 
             }
 
-        }else{
-            return response()->json([
-
-                'status' => false,
-
-                'msg' => 'Customer does not exist',
-
-            ]);
-        }    
+        }        
 
     }
 

@@ -2,9 +2,17 @@
 @section('content')
 <div class="container">
 @if (session('success'))
-  <div class="alert alert-success message-box">
+  <div class="alert alert-success message-box alert-dismissible">
     {{ session('success') }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+@endif
+@if (session('error'))
+  <div class="alert alert-success message-box alert-dismissible">
+    {{ session('error') }}
+    <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
@@ -60,21 +68,20 @@
                 <div class="menu">
                   <div>
                     <ul>
-                      <!-- <li><a href="#" class="link" data-id="{{ $row['id'] }}">View</a></li> -->
+                      {{-- <li><a href="#" class="link" data-id="{{ $row['id'] }}">View</a></li> --}}
                       <li><a href="{{ route('users.edit', $row['id']) }}" class="link" data-id="{{ $row['id'] }}">Edit</a></li>
-                      <!-- @if ($row['status'] == 1)
-                      <li><a href="{{ route('crm.status', [$row['id'], 0]) }}" class="link" data-id="{{ $row['id'] }}">Deactive</a></li>  
+                      {{--@if ($row['status'] == 1)
+                      <li><a href="{{ route('users.status', [$row['id'], 0]) }}" class="link" data-id="{{ $row['id'] }}">Deactive</a></li>  
                       @elseif($row['status'] == 0)
-                      <li><a href="{{ route('crm.status', [$row['id'], 1]) }}" class="link" data-id="{{ $row['id'] }}">Active</a></li>
-                      @endif -->
-                      <!-- <li>
-                        <form method="POST" action="{{ route('crm.destroy', $row['id']) }}">
+                      <li><a href="{{ route('users.status', [$row['id'], 1]) }}" class="link" data-id="{{ $row['id'] }}">Active</a></li>
+                      @endif --}}
+                      <li>
+                        <form method="POST" action="{{ route('users.destroy', $row['id']) }}">
                           @csrf
                           <input name="_method" type="hidden" value="DELETE">
                           <button type="submit" class="delete" title='Delete' style="border:none;background:none">Delete</button>
                         </form>
-                        {{-- <a href="#" class="link" data-id="{{ $row['id'] }}">Delete</a> --}}
-                      </li> -->
+                      </li>
                     </ul>
                   </div>
                 </div>
@@ -101,7 +108,10 @@
               e.preventDefault();
           }
       });
-  });
+setTimeout(function() {
+    $('.message-box').alert('close');
+   }, 5000);  
+});
 </script>
 @endpush
 @endsection

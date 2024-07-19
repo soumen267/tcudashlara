@@ -177,7 +177,7 @@ overflow: hidden;
                                 <span>{{ $row['dashname'] }}</span>
                             </div>
                             
-                            <a href="javascript:void(0)" class="cnfg hvr-bounce-to-bottom">Learn More</a>
+                            <a href="javascript:void(0)" class="cnfg hvr-bounce-to-bottom" data-id="{{ $row['id'] }}">Learn More</a>
                             
                          </div>
                         {{-- </a> --}}

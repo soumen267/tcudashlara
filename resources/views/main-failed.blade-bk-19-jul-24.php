@@ -141,7 +141,7 @@ div.dt-buttons {
 
               <label for="date" class="sr-only">date</label>
 
-              <input readonly type="text" class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
+              <input type="text" class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
 
             </div>
 
@@ -179,7 +179,7 @@ div.dt-buttons {
 
               <th>ID</th>
 
-              <th>OrderID</th>
+              <th>Order ID</th>
 
               <th>Email</th>
 
@@ -312,9 +312,9 @@ $(".filter1").click(function (e) {
 
     const type = $('input[name=type]:checked').val();
 
-    var from_date = $('input[name="dates"]').data('daterangepicker').startDate.format('YYYY-MM-DD 00:00:00');
+    var from_date = $('input[name="dates"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
 
-    var to_date = $('input[name="dates"]').data('daterangepicker').endDate.format('YYYY-MM-DD 23:59:59');
+    var to_date = $('input[name="dates"]').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
     if(from_date != '' && to_date != ''){
 
@@ -354,7 +354,7 @@ $('input[name="dates"]').daterangepicker({
 
         endDate: moment(),
 
-        //maxDate:new Date()
+        maxDate:new Date()
 
 });
 
@@ -376,16 +376,13 @@ function load_data1(from_date = '', to_date = '', type = '')
 
         responsive: true,
 
-        //destroy: true,
+        destroy: true,
 
         scrollCollapse: true,
 
         scrollY: '500px',
 
-        //"bSortable": true,
-
-        //"searching": true,
-        //dom: 'Bfrtip',
+        "bSortable": true,
 
         ajax: {
 
@@ -411,13 +408,13 @@ function load_data1(from_date = '', to_date = '', type = '')
 
         columns:[
 
-          {data: 'id', name: 'id'},
+          {data: 'id', name: 'id', searchable: true, sortable : true},
 
-          {data: 'order_id', name: 'order_id'},
+          {data: 'order_id', name: 'order_id', searchable: true, sortable : true},
 
-          {data: 'email', name: 'email'},
+          {data: 'email', name: 'email', searchable: true, sortable : true},
 
-          {data: 'error_msg', name: 'error_msg'},
+          {data: 'error_msg', name: 'error_msg', searchable: true, sortable : true},
 
           {data: 'created_at', name: 'created_at'}
 
@@ -432,12 +429,7 @@ function load_data1(from_date = '', to_date = '', type = '')
         columnDefs: [{
           "defaultContent": "-",
           "targets": "_all"
-          },
-          {
-              "targets": [1], // Target the first column for numeric searching
-              "type": "num", // Specify numeric type for sorting and searching
-          }
-        ],
+        }],
 
         lengthMenu: [[10, 20,25,50,100, -1], [10, 20,25,50,100, "All"]],
 
@@ -535,10 +527,10 @@ function load_data1(from_date = '', to_date = '', type = '')
 
         ],
 
-        "pagingType": "full_numbers",       
+        "pagingType": "full_numbers"        
 
     });
-    
+
 }
 
 $.urlParam = function (name) {

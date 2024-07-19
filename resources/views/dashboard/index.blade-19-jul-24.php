@@ -4,18 +4,10 @@
       @if (session('success'))
       <div class="alert alert-success">
         {{ session('success') }}
-        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      @endif
-      @if (session('error'))
-        <div class="alert alert-success message-box alert-dismissible">
-          {{ session('error') }}
-          <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
       @endif
         <div class="row mt-3">
             <div class="col-6 col-md-6">
@@ -102,18 +94,4 @@
             </div>
           </div>
     </div>
-    @push('script_src')
-    <script type="text/javascript">
-      $(document).ready(function() {
-          $('.delete').click(function(e) {
-              if(!confirm('Are you sure you want to delete this post?')) {
-                  e.preventDefault();
-              }
-          });
-    setTimeout(function() {
-        $('.message-box').alert('close');
-       }, 5000);  
-    });
-    </script>
-    @endpush
 @endsection

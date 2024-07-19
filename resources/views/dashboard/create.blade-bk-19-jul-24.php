@@ -3,12 +3,12 @@
 <div class="container">
     <div class="row justify-content-center">
     <div class="content-header">
-        <div class="col mt-2">
-            <ol class="breadcrumb float-sm-right">
-             <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Back</a></li>
-             <li class="breadcrumb-item active">Dashboard Create</li>
-            </ol>
-        </div>
+                <div class="col mt-2">
+                    <ol class="breadcrumb float-sm-right">
+                        <li class="breadcrumb-item"><a href="{{ route('dashboard.index') }}">Back</a></li>
+                        <li class="breadcrumb-item active">Dashboard Create</li>
+                    </ol>
+                </div>
     </div>
     <div class="col-12 col-md-8">
         <!-- general form elements -->
@@ -28,7 +28,6 @@
                         <label>Select CRM <span class="text-danger">*</span></label>
                         <select class="form-control" name="crmname">
                         @foreach ($getCRMData as $key => $crm)
-                          <option value="">Please Select</option>
                           <option value="{{ $crm['id'] }}">{{ $crm['providerlabel'] }}</option>
                         @endforeach
                         </select>
@@ -40,7 +39,6 @@
                         <label>Select SMTP <span class="text-danger">*</span></label>
                         <select class="form-control" name="smtpname">
                             @foreach ($getSMTPData as $key => $smtp)
-                            <option value="">Please Select</option>
                             <option value="{{ $smtp['id'] }}">{{ $smtp['name'] }}</option>
                             @endforeach
                         </select>
@@ -52,7 +50,6 @@
                         <label>Select SHOPIFY <span class="text-danger">*</span></label>
                         <select class="form-control" name="shopifyname">
                             @foreach ($getShopifyData as $key => $shopify)
-                            <option value="">Please Select</option>
                             <option value="{{ $shopify['id'] }}">{{ $shopify['storeurl'] }}</option>
                             @endforeach
                         </select>

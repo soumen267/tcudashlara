@@ -4,7 +4,6 @@
     @csrf
     <input type="hidden" name="_method" value="PUT">
     <input type="hidden" name="update_id" class="update-id">
-    <input type="hidden" name="shopify_email" class="shopifyemail">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <div class="modal-header">
@@ -32,13 +31,13 @@
             <div class="form-group mb-3">
               <label class="col-12 col-form-label">Email:</label>
               <div class="col-md-12">
-                <input type="email" class="form-control update-email" name="update_email" required>
+                <input type="text" class="form-control update-email" name="update_email" required>
               </div>
             </div>
             <div class="form-group mb-3">
               <label class="col-12 col-form-label">Phone Number:</label>
               <div class="col-md-12">
-                <input type="tel" class="form-control update-phone" name="update_phone" maxlength="13" required>
+                <input type="text" class="form-control update-phone" name="update_phone" required>
               </div>
             </div>
           </div>

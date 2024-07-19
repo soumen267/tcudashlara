@@ -4,12 +4,19 @@
 @if (session('success'))
 <div class="alert alert-success message-box">
     {{ session('success') }}
-    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
 </div>
 @endif
-
+@if (session('error'))
+  <div class="alert alert-success message-box alert-dismissible">
+    {{ session('error') }}
+    <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+@endif
 <div class="row mt-3">
   <div class="col-6 col-md-6">
     <ol class="breadcrumb float-sm-right">

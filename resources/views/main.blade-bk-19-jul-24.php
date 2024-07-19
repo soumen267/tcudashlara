@@ -6,7 +6,7 @@
 <style type="text/css">
 .container {max-width: 1480px;}
  
-#loading{position: fixed;}
+
 
 #app{
       background: #0250c5;
@@ -104,22 +104,6 @@ div.dt-buttons {
     text-align: center;
 }
 }
-.paginate_button:active {
-  color: red !important;
-}
-#liveToast .close{
-      color: #000 !important;
-    position: absolute;
-    right: 10px;
-    border-radius: 50%;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    top: 12px;
-}
-
 </style>
 
 <div class="container">
@@ -146,7 +130,7 @@ div.dt-buttons {
 
               <label for="date" class="sr-only">date</label>
 
-              <input type="text" readonly class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
+              <input type="text" class="form-control" name="dates" id="dates" value="" placeholder="Date Range">
 
             </div>
 
@@ -189,8 +173,6 @@ div.dt-buttons {
             <th>Name</th>
 
             <th>Contact Details</th>
-
-            <th style="display: none">Phone</th>
 
             <th>Password</th>
 
@@ -334,9 +316,9 @@ $(".filter").click(function (e) {
 
     const type = $('input[name=type]:checked').val();
 
-    var from_date = $('input[name="dates"]').data('daterangepicker').startDate.format('YYYY-MM-DD 00:00:00');
+    var from_date = $('input[name="dates"]').data('daterangepicker').startDate.format('YYYY-MM-DD');
 
-    var to_date = $('input[name="dates"]').data('daterangepicker').endDate.format('YYYY-MM-DD 23:59:59');
+    var to_date = $('input[name="dates"]').data('daterangepicker').endDate.format('YYYY-MM-DD');
 
     if(from_date != '' && to_date != ''){
 
@@ -440,7 +422,7 @@ $('input[name="dates"]').daterangepicker({
 
         endDate: moment(),
 
-        //maxDate:new Date()
+        maxDate:new Date()
 
 });
 
@@ -458,7 +440,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
         serverSide: true,
 
-        responsive: false,
+        responsive: true,
 
         destroy: true,
 
@@ -468,7 +450,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
         "bSortable": true,
         
-        "autoWidth":false,
+        //"autoWidth":true,
 
         ajax: {
 
@@ -491,45 +473,28 @@ function load_data(from_date = '', to_date = '', type = '')
           //$('#dataTable2 thead tr').remove();
 
         },
-        columnDefs: [
-            {
-                "targets": [2], // Target the first column for merging
-                "render": function(data, type, row) {
-                    // Example: Merge 'first_name' and 'last_name' into a single column
-                    return row.email_address + '<br/>' + row.phone
-                }
-            },
-            {
-                "targets": [3], // Index of the first hidden column (zero-based index)
-                "visible": false, // Hide the 'first_name' column
-                "searchable": true // Enable searching on the 'first_name' column
-            },
 
-        ],
         columns:[
 
           {data: 'id', name: 'shopify_customers.id', searchable: true, sortable : true},
 
           {data: 'name', name: 'shopify_customers.name', searchable: true, sortable : true},
 
-          {data: 'email_address', name: 'shopify_customers.email_address',
+          {data: 'email_address', name: 'shopify_customers.email_address', searchable: true, sortable : true,
 
-                  // render: function (data, type, row, meta) {
+                    render: function (data, type, row, meta) {
 
-                  //   return type === 'display' ? data.replace(/<br\s*\/?>/gi, ' ') : data;
+                      return row.email_address + '<br/>' + row.phone
 
-                  // },
-                  searchable: true, sortable : true
-          },
-          {data: 'phone', searchable: true, sortable : true, "visible": false},
+                  }},
 
           {data: 'password', name: 'shopify_customers.password', searchable: true, sortable : true},
 
           {data: 'coupon_code', name: 'shopify_customers.coupon_code', searchable: true, sortable : true},
 
-          {data: 'balance', name: 'shopify_customers.balance', searchable: true, sortable : true},
+          {data: 'balance', name: 'shopify_customers.balance', searchable: false, sortable : false},
 
-          {data: 'mail_status', name: 'shopify_customers.mail_status', searchable: true, sortable : true},
+          {data: 'mail_status', name: 'action'},
 
           {data: 'created_at', name: 'shopify_customers.created_at'},
 
@@ -643,7 +608,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
         ],
 
-        "pagingType": "full_numbers",
+        "pagingType": "full_numbers",        
 
     });
 
@@ -654,11 +619,7 @@ function load_data(from_date = '', to_date = '', type = '')
 $("body").on("click",".edit-details", function(e){
 
   e.preventDefault();
-  $(".update-fname").val('');
-  $(".update_lname").val('');
-  $(".update-email").val('');
-  $(".update-phone").val('');
-  $(".texterror").empty();
+
   var id = $(this).data("id");
 
   var dashID = $(this).data("dashid");
@@ -689,8 +650,6 @@ $("body").on("click",".edit-details", function(e){
       $("#upd-modal").show();
 
       $(".update-id").val(id);
-
-      $(".shopifyemail").val(response.email_address);
 
       var name = response.name;
 
@@ -729,39 +688,13 @@ $.ajaxSetup({
 
 $(document).on("click", ".updChanges", function(){
 
-  $("#loading").show();
+
   $(".texterror").remove();
 
   $(".form-control").removeClass('is-invalid');
 
   var id = $(this).data('dashid');
 
-  var fname = $(".update-fname").val();
-  var lname = $(".update-lname").val();
-  var email = $(".update-email").val();
-  var phone = $(".update-phone").val();
-  var regphone = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
-  var err = 0;
-  if(fname == ''){
-    $(document).find('.update-fname').after('<span class="texterror" style="color:red">Firstname field is required.</span>')
-    err = 1;
-  }
-  if(lname == ''){
-    $(document).find('.update-lname').after('<span class="texterror" style="color:red">Lastname field is required.</span>')
-    err = 1;
-  }
-  if(email == ''){
-    $(document).find('.update-email').after('<span class="texterror" style="color:red">Email field is required.</span>')
-    err = 1;
-  }else if(!regphone.test(email)){
-    $(document).find('.update-email').after('<span class="texterror" style="color:red">Please enter valid email.</span>')
-    err = 1;
-  }
-  if(phone == ''){
-    $(document).find('.update-phone').after('<span class="texterror" style="color:red">Phone field is required.</span>')
-    err = 1;
-  }
-  if(err == 0){
   $.ajax({
 
     type: "PUT",
@@ -773,47 +706,45 @@ $(document).on("click", ".updChanges", function(){
     data: $("#update-details").serialize(),
 
     dataType: "json",
-    // beforeSend: function(data){
-    //   $("#loading").show();
-    // },
+    beforeSend: function(data){
+      $("#loading").show();
+    },
 
     success: function (data) {
+
+      console.log(data);
+
       if(data.status == 'false'){
-        //$("#loading").hide();
-        //$(".update-data-msg").show();
-        $("#loading").hide();
-        Swal.fire({
 
-          icon: "error",
+        $(".update-data-msg").show();
 
-          title: "Oops...",
+        $(".update-data-msg").text(data.error_reason);
 
-          text: data.error_reason
-
-        })
-        //$(".update-data-msg").text(data.error_reason);
-
-        //$(".update-data-msg").css({'color':'red','font-weight': 'bold'});
+        $(".update-data-msg").css({'color':'red','font-weight': 'bold'});
 
       }else{
-        //$("#loading").hide();
-        //$(".update-data-msg").text('Customer Data Updated.');
 
-        //$(".update-data-msg").css({'color':'green','font-weight': 'bold'});
-        $("#loading").hide();
+        $(".update-data-msg").text('Customer Data Updated.');
+
+        $(".update-data-msg").css({'color':'green','font-weight': 'bold'});
+
         setTimeout(() => {
 
           $("#upd-modal").hide();
+
+          $('#dataTable1').DataTable().ajax.reload();
+
+
           Swal.fire({
+
               icon: 'success',
 
               title: 'Success',
 
               text: "Customer updated successfully!",
-          }).then((result) => {
-            // Reload the Page
-            $('#dataTable1').DataTable().ajax.reload();
-          });          
+
+          })
+
         }, 500);
 
       }      
@@ -821,10 +752,12 @@ $(document).on("click", ".updChanges", function(){
     },
 
     error: function (err) {
-      $("#loading").hide();
+
       let error = err.responseJSON;
 
       $.each(error.errors, function (index, value) {
+
+         console.log(index);
 
          $(`#${index}`).removeClass("is-invalid");
 
@@ -835,15 +768,11 @@ $(document).on("click", ".updChanges", function(){
       });
 
     },
-    //complete: function(data){
-      //  $("#loading").hide();
-    //},
+    complete: function(data){
+        $("#loading").hide();
+    },
 
   });
-
-  }else{
-    $("#loading").hide();
-  }
 
 })
 
@@ -1014,7 +943,7 @@ $(document).on("click",".create_customer",function(){
 
                         dataType: "json",
 
-                        data: {order_id:orderid,coupon_val:coupon_val,return_type:'json',"_token":"{{csrf_token()}}"},
+                        data: {order_id:orderid,coupon_val:coupon_val,return_type:'html',"_token":"{{csrf_token()}}"},
                         beforeSend: function(data){
                           $("#loading").show();
                         },
@@ -1024,8 +953,6 @@ $(document).on("click",".create_customer",function(){
                               $(".error-msg").html(data.error_reason);
                               $("#search_results").html("");
                             }else{
-                              $("#create-modal").hide();
-                              $("#search_results").html("");
                               Swal.fire({
 
                               icon: 'success',
@@ -1034,14 +961,12 @@ $(document).on("click",".create_customer",function(){
 
                               text: "Customer created successfully!",
 
-                              }).then((result) => {
-                                // Reload the Page
-                                    $('#dataTable1').DataTable().ajax.reload();
-                                });
+                              })
                             }                            
-                            //$("#create_results").html("");
-                            //$("#create_results").html(data);
-                            //search_results
+                            $("#create_results").html("");
+                            $("#create_results").html(data);
+                            $('#dataTable').DataTable().ajax.reload();
+
                         },
                         error:function(err){
                           $(".error-msg").show();
@@ -1059,14 +984,6 @@ $(document).on("click",".create_customer",function(){
 });
 
 </script>
-<script>
-$(document).ready(function() {
-    $('#liveToast .close').click(function() {
-        $('#liveToast').toast('hide'); 
-    });
-});
-</script>
-
 
 @endpush
 

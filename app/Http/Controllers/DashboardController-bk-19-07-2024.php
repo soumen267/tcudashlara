@@ -319,8 +319,8 @@ class DashboardController extends Controller
 
                                     $error_reason .=
 
-                                        $key . " " . $error["errors"][$key][0] . " & ";
-                                        //$error["errors"][$key][0] . " & ";
+                                        //$key . " " . $error["errors"][$key][0] . " & ";
+                                        $error["errors"][$key][0] . " & ";
 
                                 }
                                 
@@ -474,9 +474,7 @@ class DashboardController extends Controller
                 $balance = $checkLastInsertShopifyCustomers["balance"] ? $checkLastInsertShopifyCustomers["balance"] : 0;
 
                 $balance = $balance - $couponAmounts;
-                //$balance = $couponAmounts;
                 //dd($balance);
-                
                 $couponCode = $checkLastInsertShopifyCustomers["coupon_code"] ? $checkLastInsertShopifyCustomers["coupon_code"] : $generateCode;
 
                 $priceRuleId = $checkLastInsertShopifyCustomers["price_rule_id"] ? $checkLastInsertShopifyCustomers["price_rule_id"] : "";
@@ -780,16 +778,6 @@ class DashboardController extends Controller
 
             'products' => 'required'
 
-        ],[
-            'dashname.required' => 'The dashboard name field is required',
-
-            'crmname' => 'The CRM provider name field is required',
-
-            'smtpname' => 'The SMTP provider name field is required',
-
-            'shopifyname' => 'The Shopify store name field is required',
-
-            'products' => 'The allowed products field is required'
         ]);
 
 
@@ -908,18 +896,7 @@ class DashboardController extends Controller
 
             'products' => 'required'
 
-        ],
-        [
-            'dashname.required' => 'The dashboard name field is required',
-
-            'crm_id.required' => 'The CRM provider name field is required',
-
-            'smtp_id.required' => 'The SMTP provider name field is required',
-
-            'shopify_id.required' => 'The Shopify store name field is required',
-
-            'products.required' => 'The allowed products field is required'
-        ]);
+            ]);
 
         $saveData = Dashboard::with('products')->findOrFail($request->id);
 
@@ -949,7 +926,7 @@ class DashboardController extends Controller
 
         }
 
-        return redirect()->route('dashboard.index')->with('success', 'Dashboard updated successfully!');
+        return redirect()->route('dashboard.index')->with('success', 'Dashboard created successfully!');
 
     }
 
@@ -1013,81 +990,55 @@ class DashboardController extends Controller
 
     }
 
-    public function updateTableCRMOrder(){
-        // $getData = DB::table('raw_crm_orders')->where('shopify_customers_id',0)->limit(500)->get();
-        // foreach($getData as $value){
-        //     $getcal = json_decode($value->api_response, true);
-        //     if(DB::table('raw_shopify_customers')->where('shopify_customer_id', '=',$getcal['CustomerId'])->exists()){
-        //         $getShopifyID = DB::table('raw_shopify_customers')->where('shopify_customer_id', '=',$getcal['CustomerId'])->first();
-        //         DB::table('raw_crm_orders')->where('id','=',$value->id)
-        //             ->where('shopify_customers_id',0)
-        //             ->update(['shopify_customers_id' => $getShopifyID->id]);
-        //     }else{
-        //         $getShopifyID = DB::table('raw_shopify_customers')->where('shopify_customer_id', '=',$getcal['CustomerId'])->first();
-        //         DB::table('raw_crm_orders')->where('id','=',$value->id)
-        //             ->where('shopify_customers_id',0)
-        //             ->update(['shopify_customers_id' => 'NA']);
-        //     }
-        // }
-        $getData = DB::table('raw_crm_orders')->where('shopify_customers_id',0)->limit(100)->get();
-        DB::transaction(function () use ($getData) {
-        foreach($getData as $value){
-            $getcal = json_decode($value->api_response, true);
-            $checkData = DB::table('raw_shopify_customers')->where('shopify_customer_id', '=',$getcal['CustomerId'])
-            ->select(['id'])
-            ->first();
-            //dd($checkData);
-            if($checkData){
-                DB::table('raw_crm_orders')->where('id','=',$value->id)
-                    ->where('shopify_customers_id',0)
-                    ->update(['shopify_customers_id' => $checkData->id]);
-            }else{
-                DB::table('raw_crm_orders')->where('id','=',$value->id)
-                    ->where('shopify_customers_id',0)
-                    ->update(['shopify_customers_id' => 'NA']);
-            }
-        }
-        });
-    }
-
 
 
     public function updatePIDNotRegData(){
-        $getOrderID = DB::table('raw_shopify_notreg_data')->where('pid','=',0)->limit(100)->get();
-        $sticky1 = Crm::where('status', '=', '1')->first();
-        $apiurl = $sticky1->apiendpoint . "/api/v1/order_view";
-        foreach($getOrderID as $value){
-            $orderId = [
-                'order_id' => $value->order_id
-            ];
 
-            // $apiurl = env("STICKY_URL");
-            // $key = env("STICKY_API_USERNAME");
-            // $pwd = env("STICKY_API_PASSWORD");
-            $ViewOrder = $this->orderView($apiurl, $orderId, $sticky1->apiusername, $sticky1->apipassword);
-            if($ViewOrder['response_code'] == 100){
-                $oid = '';
-                $data = '';
-                $oid = $ViewOrder['order_id'];
-                $data = $ViewOrder['products'][0]['product_id'];
-                DB::table('raw_shopify_notreg_data')->where('order_id','=',$oid)
-                            ->where('pid','0')
-                            ->update([
-                                    'pid' => $data,
-                ]);
-            }else{
-                $oid = '';
-                $data = '';
-                $oid = $value->order_id;
-                $data = 500;
-                DB::table('raw_shopify_notreg_data')->where('order_id','=',$oid)
-                            ->where('pid','0')
-                            ->update([
-                                    'pid' => $data,
-                ]);
-            }
-            
+        $getOrderID = ShopifyNotregData::where('pid','=',0)->pluck('order_id');
+
+        $orderID = [];
+
+        foreach($getOrderID as $key => $orderid){
+
+            $orderID[] = $orderid;
+
         }
+
+        $orderId = [
+
+            'order_id' => $orderID
+
+        ];
+
+        $apiurl = env("STICKY_URL");
+
+        $key = env("STICKY_API_USERNAME");
+
+        $pwd = env("STICKY_API_PASSWORD");
+
+        $ViewOrder = $this->orderView($apiurl, $orderId, $key, $pwd);
+
+        $oid = '';
+
+        $data = '';
+
+        foreach($ViewOrder['data'] as $row){
+
+            $oid = $row['order_id'];
+
+            $data = $row['products'][0]['product_id'];
+
+        }
+
+        ShopifyNotregData::where('order_id','=',$oid)
+
+                          ->where('pid','0')
+
+                          ->update([
+
+                                'pid' => $data,
+
+        ]);
 
     }
 
@@ -1101,11 +1052,6 @@ class DashboardController extends Controller
             abort(403, 'Unauthorized access');
 
         }
-
-        if(Auth::user()->role != 'admin'){
-            abort(403, 'Unauthorized access');
-        }
-
 
         if (empty($id)) {
 
@@ -1217,11 +1163,7 @@ class DashboardController extends Controller
 
                         return $date;
 
-                    })
-                    
-                    ->editColumn('phone', function($row) {
-                        return (string)$row->phone;
-                    })
+                    })                    
 
                     ->with([
 
@@ -1259,25 +1201,16 @@ class DashboardController extends Controller
         if ($request->ajax()) {
 
             if ($request->filled('from_date') && $request->filled('to_date')) {
-                
-                //$productId = DB::table('shopify_notreg_data')->whereBetween('created_at', [$request->from_date, $request->to_date])->pluck('pid')->toArray();
-                $getProducts = Product::where('dashboard_id', '=', $id)->pluck('products')->toArray();
-                
-                $getDatas1 = DB::table('shopify_notreg_data')
-                                      ->select('id','order_id','email','error_msg','created_at')
-                                      ->whereIn('pid', $getProducts)
-                                      ->whereBetween('created_at', [$request->from_date, $request->to_date])
-                                      ->get();
+
+                $orderId = DB::table('shopify_notreg_data')->whereBetween('created_at', [$request->from_date, $request->to_date])->pluck('pid')->toArray();
+
+                $getDatas1 = Helper::failedData($id, $orderId);
 
             }else{
 
                 $orderId = DB::table('shopify_notreg_data')->pluck('pid')->toArray();
-                //$getDatas1 = Helper::failedData($id, $orderId);
-                $getProducts = Product::where('dashboard_id', '=', $id)->pluck('products')->toArray();
-                $getDatas1 = DB::table('shopify_notreg_data')
-                                      ->select('id','order_id','email','error_msg','created_at')
-                                      ->whereIn('pid', $getProducts)
-                                      ->get();
+                $getDatas1 = Helper::failedData($id, $orderId);
+
             }
             return DataTables::of($getDatas1)
                     
@@ -1287,13 +1220,7 @@ class DashboardController extends Controller
 
                         return $date;
                         }
-                    })
-                    ->editColumn('order_id', function($row) {
-                        return (string)$row->order_id;
-                    })
-                    ->editColumn('id', function($row) {
-                        return (string)$row->id;
-                    })
+                    })                    
                     ->with([
 
                         'type' => $request->type,

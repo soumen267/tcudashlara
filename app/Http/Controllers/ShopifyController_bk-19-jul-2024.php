@@ -8,10 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class ShopifyController extends Controller
 {
-    public function __construct()
-     {
-         $this->middleware('auth');
-     }
     /**
      * Display a listing of the resource.
      */
@@ -44,13 +40,6 @@ class ShopifyController extends Controller
             'shopifydomainname' => 'required',
             'storeurl' => 'required',
             'shopifywebhookhash'=> 'required'
-        ],[
-            'shopifyapikey.required' => 'The shopify API key field is required.',
-            'shopifyapipassword.required' => 'The shopify API password field is required.',
-            'shopifyshopname.required' => 'The shopify shop name field is required.',
-            'shopifydomainname.required' => 'The shopify domain name field is required.',
-            'storeurl.required' => 'The Store URL field is required.',
-            'shopifywebhookhash.required'=> 'The shopify webhook hash field is required.'
         ]);
         $saveShopifyData = new Shopify();
         $saveShopifyData->shopifyapikey = $request->shopifyapikey;
@@ -96,16 +85,7 @@ class ShopifyController extends Controller
             'shopifydomainname' => 'required',
             'storeurl' => 'required',
             'shopifywebhookhash'=> 'required'
-        ],
-        [
-            'shopifyapikey.required' => 'The shopify API key field is required.',
-            'shopifyapipassword.required' => 'The shopify API password field is required.',
-            'shopifyshopname.required' => 'The shopify shop name field is required.',
-            'shopifydomainname.required' => 'The shopify domain name field is required.',
-            'storeurl.required' => 'The Store URL field is required.',
-            'shopifywebhookhash.required'=> 'The shopify webhook hash field is required.'
-        ]
-        );
+        ]);
         $saveShopifyData = Shopify::findOrFail($shopify->id);
         $saveShopifyData->shopifyapikey = $request->shopifyapikey;
         $saveShopifyData->shopifyapipassword = $request->shopifyapipassword;
