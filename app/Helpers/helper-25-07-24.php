@@ -126,16 +126,14 @@ class Helper
 
         $data = DB::table('shopify_customers')
 
-                //->join('crm_orders', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
+                ->join('crm_orders', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
 
                 ->select(
 
-                    //'crm_orders.id AS ids',
-                    //'crm_orders.dashboard AS did',
+                    'crm_orders.id AS ids',
+                    'crm_orders.dashboard AS did',
 
-                    //'crm_orders.shopify_customers_id',
-                    'shopify_customers.dashboard AS did',
-                    'shopify_customers.shopify_customer_id',
+                    'crm_orders.shopify_customers_id',
 
                     'shopify_customers.id',
 
@@ -157,13 +155,12 @@ class Helper
 
                 )
 
-                ->where('shopify_customers.dashboard', '=', $id)
+                ->where('crm_orders.dashboard', '=', $id)
 
                 ->distinct()
 
-                //->groupBy('shopify_customers.email_address')
+                ->groupBy('shopify_customers.email_address');
 
-                ->latest();
         return $data;
 
     }

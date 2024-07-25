@@ -374,8 +374,6 @@ $("body").on("click",".sendmail", function(e){
 
   var id = $(this).data("id");
 
-  var dashid = $(this).data("dashid");
-
   var crmId = $(this).data("crmid");
 
   $.ajax({
@@ -389,8 +387,6 @@ $("body").on("click",".sendmail", function(e){
       "id": id,
 
       'crmId':crmId,
-
-      "dashid" :dashid,
 
       "_token":"{{csrf_token()}}",
 
@@ -444,7 +440,7 @@ $('input[name="dates"]').daterangepicker({
 
         endDate: moment(),
 
-        maxDate:new Date()
+        //maxDate:new Date()
 
 });
 
@@ -571,8 +567,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                //columns: 'th:not(:last-child)',
-                columns: [0,1,2,4,5,6,7,8],
+                columns: 'th:not(:last-child)',
 
               }
 
@@ -588,8 +583,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                  //columns: 'th:not(:last-child)',
-                  columns: [0,1,2,4,5,6,7,8],
+                  columns: 'th:not(:last-child)',
 
               }
 
@@ -605,8 +599,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                  //columns: 'th:not(:last-child)',
-                  columns: [0,1,2,4,5,6,7,8],
+                  columns: 'th:not(:last-child)',
 
                   orientation: 'landscape',
 
@@ -626,8 +619,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                  //columns: 'th:not(:last-child)',
-                  columns: [0,1,2,4,5,6,7,8],
+                  columns: 'th:not(:last-child)',
 
               },
 
@@ -643,7 +635,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                  columns: [0,1,2,4,5,6,7,8],
+                  columns: 'th:not(:last-child)',
 
               },
 
@@ -922,12 +914,10 @@ $(".customerAdd").click(function (e) {
   if($(this).data("val") == 1){
 
     $(".heading").text("Credit Customer")
-    $("#checkCredit").val(1);
 
   }else{
 
     $(".heading").text("Add Customer")
-    $("#checkCredit").val('');
 
   }
 
@@ -1008,32 +998,8 @@ $(document).on("click",".create_customer",function(){
 
                 var orderid = $(this).data('id');
 
-                var coupon = $(this).closest('#search_results').find("#coupon_val").val();
-                var creditVal = $("#credit").val();
-                if(creditVal == 1 && coupon == ''){
-                  Swal.fire({
-                      icon: 'error',
-                      title: 'Error',
-                      text: "Coupon value is required!",
-                  })
-                  return false;
-                }
-                if(creditVal == 1 && coupon < 75){
-                  Swal.fire({
-                      icon: 'error',
-                      title: 'Error',
-                      text: "Coupon value minimum $75 is required!",
-                  })
-                  return false;
-                }
-                if(creditVal == 1 && $.isNumeric(coupon) == false && coupon !== ''){
-                  Swal.fire({
-                      icon: 'error',
-                      title: 'Error',
-                      text: "Please enter numeric value!",
-                  })
-                  return false;
-                }
+                // var crmtype = $(this).data('crm');
+
                 $(this).hide();
 
                 $("#create_results").html("");

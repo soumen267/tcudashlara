@@ -85,26 +85,24 @@ class DashboardController extends Controller
         ];
 
         $response2 = $this->orderView($apiurl1, $DataQuery1, $sticky1->apiusername, $sticky1->apipassword);
-        if ($response2['response_code'] == "100") {
-            DB::table('request_check')->insert(
 
-                [
-    
-                'order_id' => $orderId,
-    
-                'email' => $response2["email_address"],
-    
-                'api_response' => json_encode($response2,true),
-    
-                'created_at' => Carbon::now()->toDateTimeString(),
-    
-                'updated_at' => Carbon::now()->toDateTimeString()
-    
-                ]
-    
-            );
-        }
-        
+        DB::table('request_check')->insert(
+
+            [
+
+            'order_id' => $orderId,
+
+            'email' => $response2["email_address"],
+
+            'api_response' => json_encode($response2,true),
+
+            'created_at' => Carbon::now()->toDateTimeString(),
+
+            'updated_at' => Carbon::now()->toDateTimeString()
+
+            ]
+
+        );
 
         $CheckOrders = CrmOrder::where('orderId', '=', $orderId)->first();
 
@@ -118,6 +116,7 @@ class DashboardController extends Controller
 
         } else {
 
+            //3290266
 
             $sticky = Crm::where('status', '=', '1')->first();
 
@@ -131,10 +130,9 @@ class DashboardController extends Controller
 
             try {
 
-                //$getProducts = Product::whereIn('dashboard_id', [1,2,3,4,5])->get()->pluck('products')->toArray();
-                $getProducts = Product::whereIn('dashboard_id', [3])->get()->pluck('products')->toArray();
-                // dd($getProducts);
-                // die();
+                $getProducts = Product::get()->pluck('products')->toArray();
+
+                //dd($getProducts);
 
                 $response = $this->orderView($apiurl, $DataQuery, $sticky->apiusername, $sticky->apipassword);
 
@@ -162,6 +160,7 @@ class DashboardController extends Controller
 
                     );
 
+                    //dd($getDash['dashId']);
 
                 }
 
@@ -214,16 +213,31 @@ class DashboardController extends Controller
 
                 if (sizeof($CheckAllowedProduct) > 0) {
 
+                    //$CheckOrders = CrmOrder::where('emailAddress', '=', $response['email_address'])->first();
+
                     $getDash = Helper::getDashboardId($response);
 
                     $value = $response["email_address"];
 
-                    $CheckCustomers = ShopifyCustomer::where('email_address', $value)->where('dashboard',$getDash)->first();
+                    $CheckCustomers = CrmOrder::with(['shopifyCustomers'])->whereHas('shopifyCustomers', function($q) use ($value){
 
+                        $q->where('email_address', $value);
+
+                    })
+
+                    ->where('dashboard',$getDash)
+
+                    ->first();
+
+
+
+                    //dd($CheckCustomers->shopifyCustomers);
+
+                    //$CheckCustomer = ShopifyCustomer::where('status', '=', 'Active')->get();
 
                     if ($CheckCustomers != null) {
 
-                        $ExistsCustomer = $CheckCustomers;
+                        $ExistsCustomer = $CheckCustomers->shopifyCustomers;
 
                         $responseArr["CustomerStatus"] = "Customer already exists";
 
@@ -334,7 +348,7 @@ class DashboardController extends Controller
 
                             $saveData->mail_response = "";
 
-                            $saveData->dashboard = $dashID;
+                            $saveData->pid = $response["products"][0]["product_id"];
 
                             $saveData->save();
 
@@ -368,8 +382,6 @@ class DashboardController extends Controller
                             $saveShopify->crm_response = json_encode($response, true);
 
                             $saveShopify->status = "Active";
-
-                            $saveShopify->dashboard = $dashID;
 
                             $saveShopify->save(); 
 
@@ -418,9 +430,19 @@ class DashboardController extends Controller
             $shopifyCustomerID = '';
 
             $ViewOrder = $response["email_address"];
-            
-            $CheckCustomers = ShopifyCustomer::where('email_address', $ViewOrder)->where('dashboard',$getDash)->first();
-            
+
+            $CheckCustomers = CrmOrder::with(['shopifyCustomers'])->whereHas('shopifyCustomers', function($q) use ($ViewOrder){
+
+                                            $q->where('email_address', $ViewOrder);
+
+                                        })
+
+                                        ->where('dashboard',$getDash)
+
+                                        ->first();
+
+            //$CheckShopifyCustomer = $CheckCustomers->shopifyCustomers;
+
             $getProd = Product::with('dashb.shopify')->where('products', '=', $CheckAllowedProductForGift)->first();
 
             $storename = $getProd->dashb->shopify['storeurl'];
@@ -429,7 +451,7 @@ class DashboardController extends Controller
 
             $dashID = $getProd->dashboard_id;
 
-            if($CheckCustomers && !empty($saveShopify['id'])){
+            if($CheckCustomers == null && !empty($saveShopify['id'])){
 
                 $customerId = $saveShopify['id'];
 
@@ -565,13 +587,13 @@ class DashboardController extends Controller
 
                 if(empty($saveShopify['id']) && $CheckCustomers != null){
 
-                $balance = $CheckCustomers["balance"];
+                $balance = $CheckCustomers->shopifyCustomers["balance"];
 
                 $balance = $balance - $couponAmounts;
 
-                $shopifyCustomerID = $CheckCustomers['id'];
+                $shopifyCustomerID = $CheckCustomers->shopifyCustomers['id'];
 
-                $priceRuleId = $CheckCustomers["price_rule_id"];
+                $priceRuleId = $CheckCustomers->shopifyCustomers["price_rule_id"];
 
                 settype($priceRuleId, "integer");
 
@@ -589,7 +611,7 @@ class DashboardController extends Controller
 
                         $priceuleresponse = $this->updatePriceRule($priceRuleData, $storename, $token, $priceRuleId);
 
-                        ShopifyCustomer::where('id', $CheckCustomers["id"])->update([
+                        ShopifyCustomer::where('id', $CheckCustomers->shopifyCustomers["id"])->update([
 
                             "balance" => $balance,
 
@@ -601,11 +623,11 @@ class DashboardController extends Controller
 
                         $responseArr["DiscountCodeStatus"] = "Discount Code Already Exist";
 
-                        $responseArr["DiscountCodeId"] = $CheckCustomers["discount_code_id"];
+                        $responseArr["DiscountCodeId"] = $CheckCustomers->shopifyCustomers["discount_code_id"];
 
-                        $responseArr["DiscountCode"] = $CheckCustomers["coupon_code"];
+                        $responseArr["DiscountCode"] = $CheckCustomers->shopifyCustomers["coupon_code"];
 
-                        $responseArr["DiscountBalance"] = $CheckCustomers["balance"];
+                        $responseArr["DiscountBalance"] = $CheckCustomers->shopifyCustomers["balance"];
 
                 }
 
@@ -613,13 +635,15 @@ class DashboardController extends Controller
 
             if($shopifyCustomerID != ''){
 
-                $sendMail = $this->sendGiftEmail($dashID, $shopifyCustomerID);
+                //$sendMail = $this->sendGiftEmail($dashID, $shopifyCustomerID);
 
                 //dd($sendMail);
 
                 $crmOrders = new CrmOrder();
 
                 $crmOrders->orderId = $response["order_id"];
+
+                $crmOrders->shopify_customers_id = $shopifyCustomerID;
 
                 $crmOrders->customerId = $response["customer_id"];
 
@@ -632,6 +656,10 @@ class DashboardController extends Controller
                 $crmOrders->lastName = $response["last_name"];
 
                 $crmOrders->pid = implode(",", $CheckAllowedProductForGift);
+
+                // $crmOrders->dateCreated = $response["acquisition_date"];
+
+                $crmOrders->dashboard = $dashID;
 
                 $crmOrders->api_response = json_encode($responseArr, true);
 
@@ -716,7 +744,7 @@ class DashboardController extends Controller
 
         }
 
-        $getDashData = Dashboard::with('crm','shopify','smtp')->get();
+        $getDashData = Dashboard::with('crm','shopify','smtp')->where('status','=',1)->get();
 
         return view('dashboard.index', compact('getDashData'));
 
@@ -725,11 +753,6 @@ class DashboardController extends Controller
 
 
     public function create(){
-        if (!Auth::user()) {
-
-            abort(403, 'Unauthorized access');
-
-        }
 
         $getCRMData = Crm::where('status','=',1)->get();
 
@@ -806,11 +829,6 @@ class DashboardController extends Controller
     public function edit($id)
 
     {
-        if (!Auth::user()) {
-
-            abort(403, 'Unauthorized access');
-
-        }
 
         $editDashboard = Dashboard::with('shopify','crm','smtp','products')->findOrFail($id);
 
@@ -877,11 +895,6 @@ class DashboardController extends Controller
     // }
 
     public function dashUpdate(Request $request){
-        if (!Auth::user()) {
-
-            abort(403, 'Unauthorized access');
-
-        }
 
         $request->validate([
 
@@ -938,20 +951,6 @@ class DashboardController extends Controller
 
         return redirect()->route('dashboard.index')->with('success', 'Dashboard updated successfully!');
 
-    }
-
-    public function changeStatus(Request $request, $id, $status){
-        if (!Auth::user()) {
-
-            abort(403, 'Unauthorized access');
-
-        }
-        $changeStat = Dashboard::findOrFail($id);
-        if($changeStat){
-            $changeStat->status = $status;
-            $changeStat->update();
-            return redirect()->route('dashboard.index')->with('success', 'Status updated successfully!');
-        }
     }
 
 
@@ -1132,16 +1131,13 @@ class DashboardController extends Controller
 
                         $getDatas = DB::table('shopify_customers')
 
-                        //->join('crm_orders', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
+                        ->join('crm_orders', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
 
                         ->select(
 
-                            //'crm_orders.id AS ids',
+                            'crm_orders.id AS ids',
 
-                            //'crm_orders.dashboard AS did',
-
-                            'shopify_customers.dashboard AS did',
-                            'shopify_customers.shopify_customer_id',
+                            'crm_orders.dashboard AS did',
 
                             'shopify_customers.id',
 
@@ -1165,50 +1161,17 @@ class DashboardController extends Controller
 
                             ->whereBetween('shopify_customers.created_at', [$request->from_date, $request->to_date])
 
-                            ->where('shopify_customers.dashboard', '=', $id)
+                            ->where('crm_orders.dashboard', '=', $id)
 
                             ->distinct()
 
-                            //->groupBy('shopify_customers.email_address')
-
-                            ->latest();
+                            ->groupBy('shopify_customers.email_address');
 
                 } else {
 
                     $now = Carbon::now();
 
-                    //$getDatas = Helper::getCrmShopifyData($id);
-                    $getDatas = DB::table('shopify_customers')
-
-                ->select(
-                    'shopify_customers.dashboard AS did',
-                    'shopify_customers.shopify_customer_id',
-
-                    'shopify_customers.id',
-
-                    'shopify_customers.name',
-
-                    'shopify_customers.email_address',
-
-                    'shopify_customers.phone',
-
-                    'shopify_customers.password',
-
-                    'shopify_customers.coupon_code',
-
-                    'shopify_customers.balance',
-
-                    'shopify_customers.mail_status',
-
-                    'shopify_customers.created_at'
-
-                )
-
-                ->where('dashboard', '=', $id)
-
-                ->distinct()
-
-                ->latest();
+                    $getDatas = Helper::getCrmShopifyData($id);
 
                 }
 
@@ -1230,15 +1193,15 @@ class DashboardController extends Controller
 
                     ->addColumn('action', function ($row) {
 
-                        $html = '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-success btn-sm edit-details" style="margin:3px;"><i class="fa fa-edit"></i> Edit</a>';
+                        $html = '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" data-crmid="' . $row->ids . '" class="btn btn-success btn-sm edit-details" style="margin:3px;"><i class="fa fa-edit"></i> Edit</a>';
 
                         if($row->mail_status == 'Sent'){
 
-                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Re-Send Mail</a>';
+                            $html .= '<a data-id="' . $row->id . '"  data-crmid="' . $row->ids . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Re-Send Mail</a>';
 
                         }else{
 
-                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Send Mail</a>';
+                            $html .= '<a data-id="' . $row->id . '" data-crmid="' . $row->ids . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Send Mail</a>';
 
                         }
 
@@ -1297,16 +1260,23 @@ class DashboardController extends Controller
 
             if ($request->filled('from_date') && $request->filled('to_date')) {
                 
+                //$productId = DB::table('shopify_notreg_data')->whereBetween('created_at', [$request->from_date, $request->to_date])->pluck('pid')->toArray();
+                $getProducts = Product::where('dashboard_id', '=', $id)->pluck('products')->toArray();
+                
                 $getDatas1 = DB::table('shopify_notreg_data')
                                       ->select('id','order_id','email','error_msg','created_at')
-                                      ->where('dashboard', $id)
+                                      ->whereIn('pid', $getProducts)
                                       ->whereBetween('created_at', [$request->from_date, $request->to_date])
                                       ->get();
 
             }else{
+
+                $orderId = DB::table('shopify_notreg_data')->pluck('pid')->toArray();
+                //$getDatas1 = Helper::failedData($id, $orderId);
+                $getProducts = Product::where('dashboard_id', '=', $id)->pluck('products')->toArray();
                 $getDatas1 = DB::table('shopify_notreg_data')
                                       ->select('id','order_id','email','error_msg','created_at')
-                                      ->where('dashboard', $id)
+                                      ->whereIn('pid', $getProducts)
                                       ->get();
             }
             return DataTables::of($getDatas1)

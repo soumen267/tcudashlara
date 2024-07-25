@@ -47,8 +47,6 @@ Route::controller(DashboardController::class)->group(function(){
     Route::get('/create-customer', 'createCustomer');
     Route::get('updatePid', 'updatePIDNotRegData');
     Route::any('insertCRMS', 'shopifyToCrms');
-    Route::any('updateCRM', 'updateTableCRMOrder');
-    Route::any('dashboards/{id}/{status}', 'changeStatus')->name('dashboards.status');
 });
 Route::any('/send-email', [App\Http\Controllers\EmailController::class, 'sendEmail'])->name('sendEmail');
 
@@ -56,7 +54,6 @@ Route::any('/testwebhook', [App\Http\Controllers\EmailController::class, 'webhoo
 
 // Route::post('/webhook', 'WebHookController@index');
 Route::resource('users', UserController::class);
-Route::any('user/{id}/{status}', [App\Http\Controllers\UserController::class, 'changeStatus'])->name('users.status');
 Route::resource('crm', CrmController::class);
 Route::any('crm/{id}/{status}', [App\Http\Controllers\CrmController::class, 'changeStatus'])->name('crm.status');
 Route::resource('smtp', SmtpController::class);

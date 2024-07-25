@@ -354,7 +354,7 @@ $('input[name="dates"]').daterangepicker({
 
         endDate: moment(),
 
-        maxDate:new Date()
+        //maxDate:new Date()
 
 });
 
@@ -459,7 +459,7 @@ function load_data1(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                columns: [0,1,2,3,4],
+                columns: 'th:not(:last-child)',
 
               }
 
@@ -475,7 +475,7 @@ function load_data1(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                columns: [0,1,2,3,4],
+                  columns: 'th:not(:last-child)',
 
               }
 
@@ -491,7 +491,7 @@ function load_data1(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                columns: [0,1,2,3,4],
+                  columns: 'th:not(:last-child)',
 
                   orientation: 'landscape',
 
@@ -511,7 +511,7 @@ function load_data1(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                columns: [0,1,2,3,4],
+                  columns: 'th:not(:last-child)',
 
               },
 
@@ -527,7 +527,7 @@ function load_data1(from_date = '', to_date = '', type = '')
 
               exportOptions: {
 
-                columns: [0,1,2,3,4],
+                  columns: 'th:not(:last-child)',
 
               },
 

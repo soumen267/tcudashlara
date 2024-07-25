@@ -116,9 +116,9 @@ class HomeController extends Controller
 
     public function getData(Request $request){
 
-        $getData = DB::table('shopify_customers')
+        $getData = DB::table('crm_orders')
 
-                    //->join('shopify_customers', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
+                    ->join('shopify_customers', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
 
                     ->select('shopify_customers.id',
 
@@ -199,19 +199,20 @@ class HomeController extends Controller
 
         $old_email = $request->shopify_email;
 
-        
-        // $CheckCustomer = CrmOrder::with(['shopifyCustomers'])
-        
-        //                             ->whereHas('shopifyCustomers', function($q) use ($ID, $old_email){
-            
-        //                                     $q->where('id', $ID);
-        
-        //                                     $q->where('email_address', $old_email);
-        
-        // })
-        
-        $CheckCustomer = ShopifyCustomer::where('id', $ID)->where('email_address',$old_email)
+        //$CheckCustomer = ShopifyCustomer::where('id', $request->update_id)->where('email_address',$request->update_email)->first();
+
+        $CheckCustomer = CrmOrder::with(['shopifyCustomers'])
+
+                                    ->whereHas('shopifyCustomers', function($q) use ($ID, $old_email){
+
+                                            $q->where('id', $ID);
+
+                                            $q->where('email_address', $old_email);
+
+        })
+
         ->where('dashboard',$dashID)
+
         ->first();
         //dd($CheckCustomer);
         $getDatas = Dashboard::with('crm','shopify','smtp')->where('id','=',$dashID)->first();
@@ -229,7 +230,7 @@ class HomeController extends Controller
 
             // $customerId = $CheckCustomer->shopifyCustomers->shopify_customer_id ? $CheckCustomer->shopifyCustomers->shopify_customer_id : "";
 
-            $customerId = $CheckCustomer->shopify_customer_id ? $CheckCustomer->shopify_customer_id : "";
+            $customerId = $CheckCustomer->shopifyCustomers->shopify_customer_id ? $CheckCustomer->shopifyCustomers->shopify_customer_id : "";
 
             //dd($customerId);
 
@@ -291,13 +292,13 @@ class HomeController extends Controller
 
                 // $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->first();
 
-                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer['id'])->first();
+                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->first();
 
                 if($CheckShopifyCustomer){
 
                     //ShopifyCustomer::where('id', $CheckCustomer['shopifyCustomers']['id'])->update([
 
-                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer['id'])->update([
+                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->update([
 
                         "name" => $CustomerResponse['msg']['customer']["first_name"] . " " . $CustomerResponse['msg']['customer']["last_name"],
 
@@ -383,8 +384,9 @@ class HomeController extends Controller
         if($ViewOrder["response_code"] == 100){
 
             $checkAllowedDashboard = Helper::getDashboardId($ViewOrder);
-            
+
         }        
+
         if($ViewOrder["response_code"] != 100 && $ViewOrder["response_code"] != 350){
 
             return response()->json([
@@ -472,17 +474,15 @@ class HomeController extends Controller
 
         $customerEmail = $ViewOrder["email_address"];
 
-        $CheckCustomer = ShopifyCustomer::where('email_address', $customerEmail)->where('dashboard',$request->dashid)->first();
+        $CheckCustomer = CrmOrder::with(['shopifyCustomers'])->whereHas('shopifyCustomers', function($q) use ($customerEmail){
 
-        // $CheckCustomer = CrmOrder::with(['shopifyCustomers'])->whereHas('shopifyCustomers', function($q) use ($customerEmail){
+                                            $q->where('email_address', $customerEmail);
 
-        //                                     $q->where('email_address', $customerEmail);
+                                        })
 
-        //                                 })
+                                        ->where('dashboard',$request->dashid)
 
-        //                                 ->where('dashboard',$request->dashid)
-
-        //                    ->first();
+                           ->first();
 
         if($CheckCustomer != null){
 
@@ -492,25 +492,25 @@ class HomeController extends Controller
 
             $responseArray['user_status'] = false;
 
-            $responseArray['shopify_customer_id'] = $CheckCustomer['shopify_customer_id'];
+            $responseArray['shopify_customer_id'] = $CheckCustomer->shopifyCustomers['shopify_customer_id'];
 
-            $responseArray['shopify_customer_useremail'] =  $CheckCustomer['email_address'];
+            $responseArray['shopify_customer_useremail'] =  $CheckCustomer->shopifyCustomers['email_address'];
 
-            $responseArray['shopify_password'] =  $CheckCustomer['password'];
+            $responseArray['shopify_password'] =  $CheckCustomer->shopifyCustomers['password'];
 
-            $responseArray['coupon_code'] =  $CheckCustomer['coupon_code'];
+            $responseArray['coupon_code'] =  $CheckCustomer->shopifyCustomers['coupon_code'];
 
-            $responseArray['balance'] =  $CheckCustomer['balance'];
+            $responseArray['balance'] =  $CheckCustomer->shopifyCustomers['balance'];
 
             
 
             if($CheckCustomer['crm_response'] == NULL){
 
-                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer['id'])->first();
+                $CheckShopifyCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->first();
 
                 if($CheckShopifyCustomer){
 
-                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer['id'])->update([
+                    $saveCustomer = ShopifyCustomer::where('id', $CheckCustomer->shopifyCustomers['id'])->update([
 
                         'crm_response' => json_encode($ViewOrder,true),
 
@@ -564,7 +564,7 @@ class HomeController extends Controller
 
             if($request->credit == '1'){
 
-                $html .= '<tr><th>Enter Coupon Value</th><th><input type="text" class="form-control w-100" id="coupon_val" value="75" data-name="coupon" name="coupon_val" placeholder="Coupon Value" onkeyup="javascript: this.value = this.value.replace(/[^0-9]/g, \'\');"></tr>';
+                $html .= '<tr><th>Enter Coupon Value</th><th><input type="text" class="form-control w-100" id="coupon_val" value="75" name="coupon_val" placeholder="Coupon Value required"></tr>';
 
             }
 

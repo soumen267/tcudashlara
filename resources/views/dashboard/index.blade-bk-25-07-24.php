@@ -2,7 +2,7 @@
 @section('content')
     <div class="container">
       @if (session('success'))
-      <div class="alert alert-success message-box">
+      <div class="alert alert-success">
         {{ session('success') }}
         <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">
           <span aria-hidden="true">&times;</span>
@@ -38,7 +38,7 @@
                     <th>CRM</th>
                     <th>SMTP</th>
                     <th>SHOPIFY</th>
-                    <th>Status</th>
+                    <!-- <th>Status</th> -->
                     <th colspan="2">Last Updated</th>
                   </tr>
                 </thead>
@@ -51,13 +51,13 @@
                     <td>{{ $row->crm['providerlabel'] }}</td>
                     <td>{{ $row->shopify['storeurl'] }}</td>
                     <td>{{ $row->smtp['name'] }}</td>
-                    <td>
+                    <!-- <td>
                       @if ($row['status'] == 1)
                       <span class="text-secondary"><strong>Active</strong></span>
                       @elseif($row['status'] == 0)
                       <span class="text-secondary"><strong>Deactive</strong></span>
                       @endif
-                    </td>
+                    </td> -->
                     <td>{{ $row['updated_at'] }}</td>
                     <td>
                       <div id="container">
@@ -71,12 +71,12 @@
                               <ul class="menu-items">
                                 <!-- <li><a href="#" class="link" data-id="{{ $row['id'] }}">View</a></li> -->
                                 <li><a href="{{ route('dashboards.edit', $row['id']) }}" class="link" data-id="{{ $row['id'] }}">Edit</a></li>
-                                @if ($row['status'] == 1)
-                                <li><a href="{{ route('dashboards.status', [$row['id'], 0]) }}" class="link" data-id="{{ $row['id'] }}">Deactive</a></li>  
+                                {{-- @if ($row['status'] == 1)
+                                <li><a href="{{ route('crm.status', [$row['id'], 0]) }}" class="link" data-id="{{ $row['id'] }}">Deactive</a></li>  
                                 @elseif($row['status'] == 0)
-                                <li><a href="{{ route('dashboards.status', [$row['id'], 1]) }}" class="link" data-id="{{ $row['id'] }}">Active</a></li>
+                                <li><a href="{{ route('crm.status', [$row['id'], 1]) }}" class="link" data-id="{{ $row['id'] }}">Active</a></li>
                                 @endif
-                                {{-- <li>
+                                <li>
                                   <form method="POST" action="{{ route('crm.destroy', $row['id']) }}">
                                     @csrf
                                     <input name="_method" type="hidden" value="DELETE">
