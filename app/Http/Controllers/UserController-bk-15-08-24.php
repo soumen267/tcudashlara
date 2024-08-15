@@ -58,7 +58,7 @@ class UserController extends Controller
         $userPassword = $request->password;
         $userName = $request->name;
         $emailTemplate = "email_template.welcome-email.create-user";
-        $saveUser->save();
+        //$saveUser->save();
         $getSMTPData = Smtp::where('status', '=', 1)->where('name', '=','Prime Widget')->first();
         $domain = $getSMTPData->domain;
         $api = $getSMTPData->api;

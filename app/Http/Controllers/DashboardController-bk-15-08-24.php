@@ -132,7 +132,7 @@ class DashboardController extends Controller
             try {
 
                 //$getProducts = Product::whereIn('dashboard_id', [1,2,3,4,5])->get()->pluck('products')->toArray();
-                $getProducts = Product::whereIn('dashboard_id', [1,2,3,4,5])->get()->pluck('products')->toArray();
+                $getProducts = Product::whereIn('dashboard_id', [3])->get()->pluck('products')->toArray();
                 // dd($getProducts);
                 // die();
 
@@ -1092,113 +1092,231 @@ class DashboardController extends Controller
 
     }
 
-    public function mainData(Request $request, $id) {
-        if (!Auth::user() || Auth::user()->role != 'admin') {
+
+
+    public function mainData(Request $request, $id)
+
+    {
+        if (!Auth::user()) {
+
+            abort(403, 'Unauthorized access');
+
+        }
+
+        if(Auth::user()->role != 'admin'){
             abort(403, 'Unauthorized access');
         }
 
+
         if (empty($id)) {
-            return response()->json(['message' => 'Empty'], 400);
-        }
+
+            echo "Empty";
+
+        } else {
+
+            $data = [];
+
+            $getDatas = [];
+
             $getDashboard = Helper::getDashboardName();
-            //$dashboardId = Helper::getIdfromUrl();
-            $fromDate = $request->filled('from_date') ? $request->from_date : null;
-            $toDate = $request->filled('to_date') ? $request->to_date : Carbon::now();
-            $search = strtolower($request->input('search.value', ''));
-            
+
+            global $dashboardId;
+
+            $dashboardId = Helper::getIdfromUrl();
+
             if ($request->ajax()) {
 
-                $query = DB::table('shopify_customers')
-                ->select(
-                'dashboard AS did',
-                'shopify_customer_id',
-                'id',
-                'name',
-                'email_address',
-                'phone',
-                'password',
-                'coupon_code',
-                'balance',
-                'mail_status',
-                'created_at'
-            )
-            ->where('dashboard', $id);
-            //->orderBy($orderColumnName, $orderDir)
-            //->orderBy('id', 'desc');
-            // Apply date filters
-            if ($fromDate && $toDate) {
-                $query->whereBetween('created_at', [$fromDate, $toDate]);
-            }
+                if ($request->filled('from_date') && $request->filled('to_date')) {
 
-            // Apply full-text search
-            if (!empty($search)) {
-                $query->whereRaw(
-                    "MATCH (name, email_address, phone, password, coupon_code, balance) AGAINST (? IN NATURAL LANGUAGE MODE)",
-                    [$search]
-                );
-            }
-            
+                        $now = \Carbon\Carbon::now();
+
+                        $getDatas = DB::table('shopify_customers')
+
+                        //->join('crm_orders', 'crm_orders.shopify_customers_id', '=', 'shopify_customers.id')
+
+                        ->select(
+
+                            //'crm_orders.id AS ids',
+
+                            //'crm_orders.dashboard AS did',
+
+                            'shopify_customers.dashboard AS did',
+                            'shopify_customers.shopify_customer_id',
+
+                            'shopify_customers.id',
+
+                            'shopify_customers.name',
+
+                            'shopify_customers.email_address',
+
+                            'shopify_customers.phone',
+
+                            'shopify_customers.password',
+
+                            'shopify_customers.coupon_code',
+
+                            'shopify_customers.balance',
+
+                            'shopify_customers.mail_status',
+
+                            'shopify_customers.created_at'
+
+                        )
+
+                            ->whereBetween('shopify_customers.created_at', [$request->from_date, $request->to_date])
+
+                            ->where('shopify_customers.dashboard', '=', $id)
+
+                            ->distinct()
+
+                            //->groupBy('shopify_customers.email_address')
+
+                            ->latest();
+
+                } else {
+
+                    $now = Carbon::now();
+
+                    //$getDatas = Helper::getCrmShopifyData($id);
+                    $getDatas = DB::table('shopify_customers')
+
+                ->select(
+                    'shopify_customers.dashboard AS did',
+                    'shopify_customers.shopify_customer_id',
+
+                    'shopify_customers.id',
+
+                    'shopify_customers.name',
+
+                    'shopify_customers.email_address',
+
+                    'shopify_customers.phone',
+
+                    'shopify_customers.password',
+
+                    'shopify_customers.coupon_code',
+
+                    'shopify_customers.balance',
+
+                    'shopify_customers.mail_status',
+
+                    'shopify_customers.created_at'
+
+                )
+
+                ->where('dashboard', '=', $id)
+
+                ->distinct()
+
+                ->latest();
+
+                }
 
                 
 
-                return DataTables::of($query)
+                return DataTables::of($getDatas)
 
                     ->addColumn('balance', function ($row) {
 
-                        return isset($row->balance) ? Str::replace('-', '$', $row->balance) : '';
+                        if(isset($row->balance)){
+
+                            $balance = Str::replace('-', '$', $row->balance);
+
+                            return $balance;
+
+                        }
 
                     })
 
                     ->addColumn('action', function ($row) {
 
                         $html = '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-success btn-sm edit-details" style="margin:3px;"><i class="fa fa-edit"></i> Edit</a>';
-                        $mailAction = $row->mail_status == 'Sent' ? 'Re-Send Mail' : 'Send Mail';
-                        $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> ' . $mailAction . '</a>';
+
+                        if($row->mail_status == 'Sent'){
+
+                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Re-Send Mail</a>';
+
+                        }else{
+
+                            $html .= '<a data-id="' . $row->id . '" data-dashid="' . $row->did . '" class="btn btn-danger btn-sm sendmail"><i class="fa fa-envelope"></i> Send Mail</a>';
+
+                        }
+
+                        
+
                         return $html;
 
                     })
 
                     ->addColumn('created_at', function ($row) {
 
-                        return date("F d, Y", strtotime($row->created_at));
+                        $date = date("F d, Y", strtotime($row->created_at));
+
+                        return $date;
 
                     })
                     
                     ->editColumn('phone', function($row) {
                         return (string)$row->phone;
                     })
-                    ->addIndexColumn()
+
+                    ->with([
+
+                        'type' => $request->type,
+
+                        'getData' => $getDatas
+
+                    ])
+
                     ->make(true);
 
             }
+
             return view('main',compact('getDashboard'));
+
+        }
+
     }
 
     public function failedData(Request $request, $id)
 
     {
-        // Authorization
-        if (!Auth::user() || Auth::user()->role != 'admin') {
+        if (!Auth::user()) {
+
             abort(403, 'Unauthorized access');
+
         }
+
+        //$getDatas1 = [];
+
+        $type = '';
 
         $getDashboard = Helper::getDashboardName();
 
         if ($request->ajax()) {
-            
-            $query = DB::table('shopify_notreg_data')
-            ->select('id', 'order_id', 'email', 'error_msg', 'created_at')
-            ->where('dashboard', $id);
-            //->latest('id');
 
             if ($request->filled('from_date') && $request->filled('to_date')) {
-                $query->whereBetween('created_at', [$request->from_date, $request->to_date]);
+                
+                $getDatas1 = DB::table('shopify_notreg_data')
+                                      ->select('id','order_id','email','error_msg','created_at')
+                                      ->where('dashboard', $id)
+                                      ->whereBetween('created_at', [$request->from_date, $request->to_date])
+                                      ->get();
+
+            }else{
+                $getDatas1 = DB::table('shopify_notreg_data')
+                                      ->select('id','order_id','email','error_msg','created_at')
+                                      ->where('dashboard', $id)
+                                      ->get();
             }
-            
-            return DataTables::of($query)
+            return DataTables::of($getDatas1)
                     
                     ->addColumn('created_at', function ($row) {
-                        return isset($row->created_at) ? date("F d, Y", strtotime($row->created_at)) : '';
+                        if(isset($row->created_at)){
+                        $date = date("F d, Y", strtotime($row->created_at));
+
+                        return $date;
+                        }
                     })
                     ->editColumn('order_id', function($row) {
                         return (string)$row->order_id;
@@ -1206,6 +1324,14 @@ class DashboardController extends Controller
                     ->editColumn('id', function($row) {
                         return (string)$row->id;
                     })
+                    ->with([
+
+                        'type' => $request->type,
+
+                        'getData' => $getDatas1
+
+                    ])
+
                     ->make(true);
 
         }

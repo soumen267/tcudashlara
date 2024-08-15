@@ -59,7 +59,7 @@ class EmailController extends Controller
                         $fromMailName = "cuttingedgegizmos";
                     }elseif($request->dashid == '2'){
                         //imoderntrendsdash
-                        $fromMailName = "ignitegearstech";
+                        $fromMailName = "egizmotrendsdash";
                     }elseif($request->dashid == '3'){
                         //jovprimewidgetpickdash
                         $fromMailName = "imoderntrendsdash";
@@ -68,10 +68,10 @@ class EmailController extends Controller
                         $fromMailName = "primewidgetpick";
                     }elseif($request->dashid == '5'){
                         //egizmotrendsdash
-                        $fromMailName = "egizmotrendsdash";
+                        $fromMailName = "ignitegearstech";
                     }
                     $params = [
-                        'from'	    => $fromMailName." ".$fromEmail,
+                        'from'	    => 'Imoderntrend '.$fromEmail,
                         'to'	    => $getData->email_address,
                         'subject'   => 'Customer Welcome',
                         'html'	    =>  View($emailTemplate, compact('customerEmail','customerPassword','discountCode','couponAmount'))->render()
