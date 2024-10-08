@@ -57,19 +57,34 @@ class DashboardController extends Controller
     {
 
         global $couponAmounts;
+
+        $dashID = '0';
+
         $responseArr = [];
+
+        $ordersProduct = [];
+
+        $getProducts = [];
+
+        $response = [];
+
         $balance = 0;
-        $orderId = $request->order_id ?? '';
-        $dashboard = null;
+
+        $orderId = ($request->order_id ? $request->order_id : '');
+
         $saveShopify = [];
 
-        // Fetch CRM and order data
-        $sticky1 = Crm::where('status', 1)->first();
-        $apiurl1 = $sticky1->apiendpoint . "/api/v1/order_view";
-        $response2 = $this->orderView($apiurl1, ['order_id' => $orderId], $sticky1->apiusername, $sticky1->apipassword);
-        if ($response2['response_code'] !== "100") {
-            return response()->json(['error' => 'Invalid response code'], 400);
-        }
+        $sticky1 = Crm::where('status', '=', '1')->first();
+
+            $apiurl1 = $sticky1->apiendpoint . "/api/v1/order_view";
+
+            $DataQuery1 = [
+
+                'order_id' => $orderId,
+
+        ];
+
+        $response2 = $this->orderView($apiurl1, $DataQuery1, $sticky1->apiusername, $sticky1->apipassword);
         if ($response2['response_code'] == "100") {
             DB::table('request_check')->insert(
 
@@ -116,30 +131,53 @@ class DashboardController extends Controller
 
             try {
 
+                //$getProducts = Product::whereIn('dashboard_id', [1,2,3,4,5])->get()->pluck('products')->toArray();
+                $getProducts = Product::whereIn('dashboard_id', [1,2,3,4,5])->get()->pluck('products')->toArray();
+                // dd($getProducts);
+                // die();
+
                 $response = $this->orderView($apiurl, $DataQuery, $sticky->apiusername, $sticky->apipassword);
 
-                $gateway_dashboard_map = [
-                    2   => [1, 101], 136 => [1, 101], 137 => [1, 101],
-                    24  => [2, 98], 51  => [2, 98], 89  => [2, 98], 124 => [2, 98], 141 => [2, 98], 147 => [2, 98],
-                    55  => [2, 105],
-                    29  => [3, 106], 91  => [3, 106], 146 => [3, 106], 148 => [3, 106],
-                    87  => [3, 105],
-                    90  => [4, 103], 102 => [4, 103], 103 => [4, 103], 119 => [4, 103], 122 => [4, 103], 126 => [4, 103], 145 => [4, 103],
-                    53  => [4, 105], 54  => [4, 105],
-                ];
+                $CheckAllowedProduct = [];
 
-                $gateway_id = $response["gateway_id"];
-                $product_id = $response["products"][0]['product_id'];
+                $ProductPriceArr = [];
 
-                // Check if the gateway_id and product_id exist in the map and set $dashboard accordingly
-                if (isset($gateway_dashboard_map[$gateway_id]) && $gateway_dashboard_map[$gateway_id][1] == $product_id) {
-                    $dashboard = $gateway_dashboard_map[$gateway_id][0];
+                if ($response['response_code'] == "100") {
+
+                    foreach ($response["products"] as $key => $order_offer) {
+
+                        $ordersProduct[] = $order_offer["product_id"];
+
+                        $ProductPriceArr[$order_offer["product_id"]] = $order_offer["price"];
+
+                    }
+
+
+
+                    $CheckAllowedProduct = array_intersect(
+
+                        $ordersProduct,
+
+                        $getProducts
+
+                    );
+
+
                 }
 
-                if (!$dashboard) {
-                    return response()->json(['error' => 'No matching dashboard found'], 400);
-                }else{
+                
+
+                if (sizeof($CheckAllowedProduct) > 0) {
+
                     $TotalAllowedOrderPrice = 0;
+
+                    foreach ($CheckAllowedProduct as $pkey => $pid) {
+
+                        $TotalAllowedOrderPrice =
+
+                            $TotalAllowedOrderPrice + $ProductPriceArr[$pid];
+
+                    }
 
                     $couponValue = $request->coupon_val ? $request->coupon_val : '';
                     if($couponValue != null){
@@ -171,17 +209,18 @@ class DashboardController extends Controller
                     }
 
                 }
+
                 
 
-                if ($dashboard != null) {
+                if (sizeof($CheckAllowedProduct) > 0) {
 
-                    $getDash = $dashboard;
+                    $getDash = Helper::getDashboardId($response);
 
                     $value = $response["email_address"];
 
                     $CheckCustomers = ShopifyCustomer::where('email_address', $value)->where('dashboard',$getDash)->first();
 
-                    // Check and create Shopify customer
+
                     if ($CheckCustomers != null) {
 
                         $ExistsCustomer = $CheckCustomers;
@@ -230,13 +269,13 @@ class DashboardController extends Controller
 
                         ];
 
-                        $getData = Dashboard::with('shopify')->where('id', '=', $dashboard)->first();
+                        $getProd = Product::with('dashb.shopify')->where('products', '=', $CheckAllowedProduct)->first();
 
-                        $storename = $getData->shopify['storeurl'];
+                        $storename = $getProd->dashb->shopify['storeurl'];
 
-                        $token = $getData->shopify['shopifyapipassword'];
+                        $token = $getProd->dashb->shopify['shopifyapipassword'];
 
-                        $dashID = $dashboard;
+                        $dashID = $getProd->dashboard_id;
 
                         $response1 = $this->createCustomer($CustomerData, $storename, $token);
 
@@ -362,9 +401,19 @@ class DashboardController extends Controller
 
         }
 
-        if ($dashboard != null) {
+        $CheckAllowedProductForGift = array_intersect(
 
-            $getDash = $dashboard;
+            $ordersProduct,
+
+            $getProducts
+
+        );
+
+
+
+        if (sizeof($CheckAllowedProductForGift) > 0) {
+
+            $getDash = Helper::getDashboardId($response);
 
             $shopifyCustomerID = '';
 
@@ -372,13 +421,13 @@ class DashboardController extends Controller
             
             $CheckCustomers = ShopifyCustomer::where('email_address', $ViewOrder)->where('dashboard',$getDash)->first();
             
-            $getData = Dashboard::with('shopify')->where('id', '=', $dashboard)->first();
+            $getProd = Product::with('dashb.shopify')->where('products', '=', $CheckAllowedProductForGift)->first();
 
-            $storename = $getData->shopify['storeurl'];
+            $storename = $getProd->dashb->shopify['storeurl'];
 
-            $token = $getData->shopify['shopifyapipassword'];
+            $token = $getProd->dashb->shopify['shopifyapipassword'];
 
-            $dashID = $dashboard;
+            $dashID = $getProd->dashboard_id;
 
             if($CheckCustomers && !empty($saveShopify['id'])){
 
@@ -513,7 +562,9 @@ class DashboardController extends Controller
 
 
             }else{
+
                 if(empty($saveShopify['id']) && $CheckCustomers != null){
+
                 $balance = $CheckCustomers["balance"];
 
                 $balance = $balance - $couponAmounts;
@@ -523,6 +574,30 @@ class DashboardController extends Controller
                 $priceRuleId = $CheckCustomers["price_rule_id"];
 
                 settype($priceRuleId, "integer");
+
+                        $priceRuleData = [
+
+                        "price_rule"=> [
+
+                                "id"=> $priceRuleId,
+
+                                "value"=> $balance
+
+                        ]
+
+                        ];
+
+                        $priceuleresponse = $this->updatePriceRule($priceRuleData, $storename, $token, $priceRuleId);
+
+                        ShopifyCustomer::where('id', $CheckCustomers["id"])->update([
+
+                            "balance" => $balance,
+
+                        ]);
+
+                        $responseArr["PriceRuleStatus"] = "Price Rule Updated. Id: " . $priceRuleId;
+
+
 
                         $responseArr["DiscountCodeStatus"] = "Discount Code Already Exist";
 
@@ -537,31 +612,31 @@ class DashboardController extends Controller
             }
 
             if($shopifyCustomerID != ''){
-                // Get the existing balance of the customer
-                    $sendMail = $this->sendGiftEmail($dashID, $shopifyCustomerID);
 
-                    //dd($sendMail);
-    
-                    $crmOrders = new CrmOrder();
-    
-                    $crmOrders->orderId = $response["order_id"];
-    
-                    $crmOrders->customerId = $response["customer_id"];
-    
-                    $crmOrders->emailAddress = $response["email_address"];
-    
-                    $crmOrders->phoneNumber = $response["customers_telephone"];
-    
-                    $crmOrders->firstName = $response["first_name"];
-    
-                    $crmOrders->lastName = $response["last_name"];
-    
-                    $crmOrders->pid = $product_id;
-    
-                    $crmOrders->api_response = json_encode($responseArr, true);
-    
-                    $crmOrders->save();
-               
+                $sendMail = $this->sendGiftEmail($dashID, $shopifyCustomerID);
+
+                //dd($sendMail);
+
+                $crmOrders = new CrmOrder();
+
+                $crmOrders->orderId = $response["order_id"];
+
+                $crmOrders->customerId = $response["customer_id"];
+
+                $crmOrders->emailAddress = $response["email_address"];
+
+                $crmOrders->phoneNumber = $response["customers_telephone"];
+
+                $crmOrders->firstName = $response["first_name"];
+
+                $crmOrders->lastName = $response["last_name"];
+
+                $crmOrders->pid = implode(",", $CheckAllowedProductForGift);
+
+                $crmOrders->api_response = json_encode($responseArr, true);
+
+                $crmOrders->save();
+
                 }
 
             }
@@ -634,6 +709,7 @@ class DashboardController extends Controller
 
 
     public function index(){
+
         if (!Auth::user()) {
 
             abort(403, 'Unauthorized access');
@@ -1017,16 +1093,7 @@ class DashboardController extends Controller
     }
 
     public function mainData(Request $request, $id) {
-        if (!Auth::check()) {
-            // If the session has expired, redirect the user to the login page
-            return redirect()->route('login')->withErrors(['message' => 'Your session has expired. Please log in again.']);
-        }
-        
-        if (Auth::check() && Auth::user()->role != 'admin') {
-            // Log the user out
-            Auth::logout();
-            
-            // If the user is not an admin, show the 403 error
+        if (!Auth::user() || Auth::user()->role != 'admin') {
             abort(403, 'Unauthorized access');
         }
 

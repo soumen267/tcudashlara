@@ -286,21 +286,6 @@ $(".config-details").click(function (e) {
 
   var id = $(this).data("id");
 
-  const dashdetails = {
-      1: {
-        pid: [101],
-      },
-      2: {
-        pid: [98, 105],
-      },
-      3: {
-        pid: [105,106],
-      },
-      4: {
-        pid: [103,105],
-      }
-  };
-
   $.ajax({
 
     type: "POST",
@@ -335,14 +320,8 @@ $(".config-details").click(function (e) {
 
         $(".storeurl").val(response.getDashboards.shopify.storeurl);
 
-        //$(".product").text(response.getAllowedProduct);
-        // Use product from dashdetails
-        if (dashdetails[id] && dashdetails[id].pid) {
-                let productText = dashdetails[id].pid.join(", ");  // Convert the array to a comma-separated string
-                $(".product").text(productText);
-        } else {
-                $(".product").text("No product data available");
-        }
+        $(".product").text(response.getAllowedProduct);
+
     },
 
   });  
@@ -491,8 +470,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
         scrollY: '500px',
 
-        //"bSortable": true,
-        "aaSorting": [[0, "desc"]],
+        "bSortable": true,
         
         "autoWidth":false,
 
@@ -569,7 +547,7 @@ function load_data(from_date = '', to_date = '', type = '')
 
         },
 
-        lengthMenu: [[10, 20,25,50,100], [10, 20,25,50,100]],
+        lengthMenu: [[10, 20,25,50,100, -1], [10, 20,25,50,100, "All"]],
 
         dom: 'RlBfrtlip',
 

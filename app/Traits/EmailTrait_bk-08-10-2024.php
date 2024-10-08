@@ -12,7 +12,7 @@ use GuzzleHttp\Exception\RequestException;
 trait EmailTrait {
 
     public function sendGiftEmail($dashID, $shopifyCustomerID){
-        $fromMailName = NULL;
+
         $getAllData = Dashboard::with('shopify','crm','smtp')->where('id', '=', $dashID)->first();
         $ShopifyCustomerRawData = '';
         $getData = ShopifyCustomer::where('id', $shopifyCustomerID)
@@ -31,16 +31,8 @@ trait EmailTrait {
             $domain = $getAllData->smtp->domain;
             $emailTemplate = $getAllData->smtp->emailtemplatepath;
             if($smtpType == "mailgun" || $smtpType == "MAILGUN"){
-                $dashIDMap = [
-                    '1' => "cuttingedgegizmos",
-                    '2' => "ignitegearstech",
-                    '3' => "imoderntrendsdash",
-                    '4' => "primewidgetpick",
-                    '5' => "egizmotrendsdash",
-                ];
-                $fromMailName = $dashIDMap[$dashID] ?? null;
                 $params = [
-                    'from'	    => $fromMailName." ".$fromEmail,
+                    'from'	    => $fromEmail,
                     'to'	    => $getData->email_address,
                     'subject'   => 'Customer Welcome',
                     'html'	    =>  View($emailTemplate, compact('customerEmail','customerPassword','discountCode','couponAmount'))->render()
